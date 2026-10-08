@@ -3,13 +3,20 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// تفعيل CORS للسماح لتطبيق الـ APK بجلب القنوات الحقيقية بدون حظر
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 // قاعدة بيانات القنوات المحمية (روابط Xtream المصححة)
 const channels = {
     "1": {
         name: "beIN Sports 1",
         logo: "https://lo1.in/bss/bsS1.png",
         url: "http://tyqw.site:2052/10675785266958/99039021857485/677012"
-    }, // تم إضافة الفاصلة وتصحيح الرابط هنا وما يليه
+    },
     "2": {
         name: "beIN Sports 2",
         logo: "https://lo1.in/bss/bsS2.png",
@@ -38,12 +45,12 @@ const channels = {
     "7": {
         name: "beIN Sports 7",
         logo: "https://lo1.in/bss/BEIN SPORTS 07.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677018"
+        url: "http://http://tyqw.site:2052/10675785266958/99039021857485/677018"
     },
     "8": {
         name: "beIN Sports 8",
-        logo: "https://lo1.in/bss/bss8.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677019"
+        logo: "https://https://lo1.in/bss/bss8.png",
+        url: "http://http://tyqw.site:2052/10675785266958/99039021857485/677019"
     }
 };
 
