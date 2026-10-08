@@ -1,97 +1,210 @@
-const express = require('express');
-const axios = require('axios');
-const app = express();
-const PORT = process.env.PORT || 3000;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بث مباشر - قنوات beIN Sports الآمنة</title>
+    
+    <!-- تضمين مشغل الفيديو Clappr والمكتبة المساعدة لدعم قنوات الـ TS الحية -->
+    <script type="text/javascript" src="https://jsdelivr.net"></script>
+    <script type="text/javascript" src="https://jsdelivr.net"></script>
 
-// قاعدة بيانات القنوات المحمية (روابط Xtream المصححة)
-const channels = {
-    "1": {
-        name: "beIN Sports 1",
-        logo: "https://lo1.in/bss/bsS1.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677012"
-    }, // تم إضافة الفاصلة وتصحيح الرابط هنا وما يليه
-    "2": {
-        name: "beIN Sports 2",
-        logo: "https://lo1.in/bss/bsS2.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677013"
-    },
-    "3": {
-        name: "beIN Sports 3",
-        logo: "https://lo1.in/bss/bs3.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677014"
-    },
-    "4": {
-        name: "beIN Sports 4",
-        logo: "https://lo1.in/bss/bs4.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677015"
-    },
-    "5": {
-        name: "beIN Sports 5",
-        logo: "https://lo1.in/bein/beinn5.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677016"
-    },
-    "6": {
-        name: "beIN Sports 6",
-        logo: "https://lo1.in/bein/beinn6.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677017"
-    },
-    "7": {
-        name: "beIN Sports 7",
-        logo: "https://lo1.in/bss/BEIN SPORTS 07.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677018"
-    },
-    "8": {
-        name: "beIN Sports 8",
-        logo: "https://lo1.in/bss/bss8.png",
-        url: "http://tyqw.site:2052/10675785266958/99039021857485/677019"
-    }
-};
+    <style>
+        body {
+            background-color: #0c0d14;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: #161722;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .header-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #282a3a;
+            padding-bottom: 15px;
+        }
+        .main-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #7a22c5;
+            object-fit: cover;
+        }
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+        .video-section {
+            flex: 2;
+            position: relative;
+        }
+        #player {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid #282a3a;
+        }
+        .playlist-section {
+            flex: 1;
+            max-height: 430px;
+            overflow-y: auto;
+            background: #1f2030;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #282a3a;
+        }
+        .playlist-section h3 {
+            margin-top: 0;
+            font-size: 16px;
+            text-align: center;
+            border-bottom: 1px solid #383a52;
+            padding-bottom: 8px;
+            color: #b3b5c6;
+        }
+        .channel-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            background: #282a3a;
+            border: none;
+            color: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        .channel-btn:hover {
+            background: #3e415b;
+        }
+        .channel-btn.active {
+            background: #7a22c5;
+            box-shadow: 0 0 10px rgba(122, 34, 197, 0.5);
+        }
+        .thumb-logo {
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            background: #fff;
+            object-fit: contain;
+        }
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .playlist-section { max-height: 250px; }
+        }
+    </style>
+</head>
+<body>
 
-// دالة جلب معلومات القناة
-app.get('/channel/info/:id', (req, res) => {
-    const channel = channels[req.params.id];
-    if (channel) {
-        res.json({ name: channel.name, logo: channel.logo });
-    } else {
-        res.status(404).send('القناة غير موجودة');
-    }
-});
+    <div class="container">
+        <!-- منطقة عرض اسم القناة الحالي واللوجو المحدث تلقائياً -->
+        <div class="header-area">
+            <img id="current-logo" class="main-logo" src="https://lo1.in" alt="شعار القناة">
+            <h2 id="current-title" style="margin:0;">beIN Sports 1 - بث مباشر</h2>
+        </div>
 
-// دالة تشغيل البث وحمايته وتصحيح نوع الدفق لقنوات Xtream المباشرة
-app.get('/channel/stream/:id', async (req, res) => {
-    const channel = channels[req.params.id];
-    if (!channel) return res.status(404).send('القناة غير موجودة');
+        <div class="main-content">
+            <!-- مساحة مشغل الفيديو السري والمحمي -->
+            <div class="video-section">
+                <div id="player"></div>
+            </div>
 
-    try {
-        const response = await axios({
-            method: 'get',
-            url: channel.url,
-            responseType: 'stream',
-            headers: {
-                // إيهام سيرفر Xtream أن الطلب قادم من مشغل مجاز وليس متصفح لعدم الحظر
-                'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) / IPTV-Player'
+            <!-- قائمة التنقل الجانبية بين الـ 8 قنوات -->
+            <div class="playlist-section">
+                <h3>قائمة القنوات المتاحة</h3>
+                <div id="channels-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ ضَع هنا رابط سيرفر Render الخاص بك الذي حصلت عليه بدون شرطة مائلة في النهاية
+        const RENDER_SERVER_URL = "https://my-secure-iptv.onrender.com"; 
+
+        // مصفوفة تعريفية للقنوات لمساعدة كود الواجهة على بناء الأزرار واللوجو فوراً
+        const localChannels = [
+            { id: "1", name: "beIN Sports 1", logo: "https://lo1.in" },
+            { id: "2", name: "beIN Sports 2", logo: "https://lo1.in" },
+            { id: "3", name: "beIN Sports 3", logo: "https://lo1.in" },
+            { id: "4", name: "beIN Sports 4", logo: "https://lo1.in" },
+            { id: "5", name: "beIN Sports 5", logo: "https://lo1.in" },
+            { id: "6", name: "beIN Sports 6", logo: "https://lo1.in" },
+            { id: "7", name: "beIN Sports 7", logo: "https://lo1.in SPORTS 07.png" },
+            { id: "8", name: "beIN Sports 8", logo: "https://lo1.in" }
+        ];
+
+        let clapprPlayer;
+
+        // دالة لتشغيل وتحديث القناة المحددة داخل المشغل
+        function playChannel(id, name, logo) {
+            // تحديث العناوين والشعارات في الصفحة لقيم القناة الحالية
+            document.getElementById('current-title').innerText = `${name} - بث مباشر`;
+            document.getElementById('current-logo').src = logo;
+
+            // تحديث تأثير الزر النشط في القائمة الجانبية
+            document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${id}`).classList.add('active');
+
+            // رابط دفق البث المحمي الموجه نحو سيرفر Render مباشرة
+            const streamUrl = `${RENDER_SERVER_URL}/channel/stream/${id}`;
+
+            // إذا كان المشغل مبنياً مسبقاً، نقوم بتدميره لتهيئة بث جديد نظيف لمنع تداخل الصوت
+            if (clapprPlayer) {
+                clapprPlayer.destroy();
             }
-        });
 
-        // السحر هنا: إجبار ExoPlayer والمتصفحات على تشغيل الرابط كبث مباشر بدلاً من تحميله
-        res.setHeader('Content-Type', 'video/mp2t');
-        res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Cache-Control', 'no-cache');
+            // بناء مشغل Clappr وتغذيته بنوع ومصدر بيانات البث المباشر لـ Xtream
+            clapprPlayer = new Clappr.Player({
+                source: streamUrl,
+                parentId: "#player",
+                width: '100%',
+                height: '400px',
+                autoPlay: true,
+                mimeType: "video/mp2t", // إخبار المشغل أن البيانات هي بث دفق MPEG-TS حي
+                playbackNotSupportedMessage: "جاري تشغيل القناة أو البث غير متوفر حالياً..."
+            });
+        }
 
-        response.data.pipe(res);
+        // دالة ذكية لبناء قائمة الأزرار الجانبية ديناميكياً فور تحميل الصفحة
+        function initPlaylist() {
+            const listContainer = document.getElementById('channels-list');
+            localChannels.forEach((ch, index) => {
+                const btn = document.createElement('button');
+                btn.className = `channel-btn ${index === 0 ? 'active' : ''}`;
+                btn.id = `btn-${ch.id}`;
+                btn.onclick = () => playChannel(ch.id, ch.name, ch.logo);
+                
+                btn.innerHTML = `
+                    <img class="thumb-logo" src="${ch.logo}" alt="logo">
+                    <span>${ch.name}</span>
+                `;
+                listContainer.appendChild(btn);
+            });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('خطأ في الاتصال بسيرفر البث المباشر');
-    }
-});
+            // تم تصحيح القراءة التلقائية لأول قناة هنا بنجاح:
+            playChannel(localChannels[0].id, localChannels[0].name, localChannels[0].logo);
+        }
 
-// دالة فحص سلامة السيرفر لمنصة Render
-app.get('/', (req, res) => {
-    res.status(200).send('Server is Live and Running!');
-});
-
-// تشغيل السيرفر مع استقبال الاتصالات على النطاق الشامل لـ Render
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+        // بدء تشغيل الواجهة والقائمة بمجرد اكتمال تحميل كود المتصفح
+        window.onload = initPlaylist;
+    </script>
+</body>
+</html>
