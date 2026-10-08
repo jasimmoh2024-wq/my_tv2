@@ -47,14 +47,9 @@ const channels = {
     }
 };
 
-// دالة جلب معلومات القناة
-app.get('/channel/info/:id', (req, res) => {
-    const channel = channels[req.params.id];
-    if (channel) {
-        res.json({ name: channel.name, logo: channel.logo });
-    } else {
-        res.status(404).send('القناة غير موجودة');
-    }
+// دالة جلب معلومات القناة بصيغة متوافقة مع تطبيقات الموبايل والـ WebView
+app.get('/channel/info-all', (req, res) => {
+    res.json(channels);
 });
 
 // دالة تشغيل البث وحمايته وتصحيح نوع الدفق لقنوات Xtream المباشرة
