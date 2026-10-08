@@ -28,8 +28,8 @@ app.get('/channel/info-all', (req, res) => {
     res.json(channels);
 });
 
-// دالة تشغيل البث المحدثة لحل مشكلة المشغل الافتراضي و ExoPlayer
-app.get('/channel/stream/:id', async (req, res) => {
+// تعديل برمجى عبقري: السيرفر سيستقبل الرابط على هيئة id.ts لتتعرف عليه نواة الأندرويد فوراً
+app.get('/channel/stream/:id.ts', async (req, res) => {
     const channel = channels[req.params.id];
     if (!channel) return res.status(404).send('القناة غير موجودة');
 
