@@ -28,6 +28,45 @@ app.get('/channel/info-all', (req, res) => {
     res.json(channels);
 });
 
+app.get('/channel/stream/:id', async (req, res) => {
+    const channel = channels[req.params.id];
+    if (!channel) return res.status(404).send('القناة غير موجودة');
+
+    try {
+        // 1. استدعاء رابط البث الأصلي (حتى لو كان بدون امتداد)
+        const response = await axios({
+            method: 'get',
+            url: channel.url,
+            responseType: 'stream',
+            headers: {
+                // إيهام السيرفر الأصلي أن الطلب قادم من مشغل مجاز لعدم الحظر
+                'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) / IPTV-Player'
+            }
+        });
+
+        // 2. السحر هنا: قراءة نوع البث الحقيقي القادم من السيرفر (Mime Type)
+        // إذا لم يرسل السيرفر نوعاً صريحاً، نقوم بحقن 'video/mp2t' (وهو الامتداد الافتراضي لقنوات Xtream المباشرة بدون امتداد)
+        const contentType = response.headers['content-type'] || 'video/mp2t';
+        
+        // 3. حقن الترويسات التي يحتاجها مشغل ExoPlayer ليتعرف على الفيديو فوراً
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Cache-Control', 'no-cache');
+        
+        // تفعيل ميزة Range Requests الهامة جداً لثبات قنوات الـ IPTV على أندرويد
+        if (response.headers['accept-ranges']) {
+            res.setHeader('Accept-Ranges', response.headers['accept-ranges']);
+        }
+
+        // 4. تمرير الدفق (Stream) إلى تطبيق الهاتف
+        response.data.pipe(res);
+
+    } catch (error) {
+        console.error("خطأ البث المباشر:", error.message);
+        res.status(500).send('خطأ في الاتصال بسيرفر البث المباشر');
+    }
+});
+
 // تعديل برمجى عبقري: السيرفر سيستقبل الرابط على هيئة id.ts لتتعرف عليه نواة الأندرويد فوراً
 app.get('/channel/stream/:id.ts', async (req, res) => {
     const channel = channels[req.params.id];
