@@ -39,7 +39,7 @@ const channels = {
     "name": "beIN Sports 5",
     "logo": "https://lo1.in/bein/beinn5.png",
     "url": "http://tyqw.site:2052/10675785266958/99039021857485/677016"
-  },
+  }
 
 // مسار جلب قائمة القنوات الحقيقية للواجهة
 app.get('/channel/info-all', (req, res) => {
