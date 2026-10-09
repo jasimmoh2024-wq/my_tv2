@@ -16,28 +16,34 @@ app.use((req, res, next) => {
 // ⚠️ ملاحظة: استبدل روابط http://xtream-server.com بروابط اشتراكك الحقيقية لكي تعمل القنوات
 const channels = {
   "1": {
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677012"><img src="https://upload.wikimedia.org/wikipedia/fr/2/2f/BeIN_Sports_1_%282014%29.png?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=original" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 4"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677013"><img src="https://static.wikia.nocookie.net/logopedia/images/8/87/BeIN_Sports_2_2014.png/revision/latest?cb=20230616100740" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 2"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677014"><img src="https://w7.pngwing.com/pngs/600/309/png-transparent-bein-sports-1-bein-channels-network-bein-sports-2-others-purple-violet-text.png" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 3"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677015"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN1sJwVTzRUcNoisrDinSPlK9oAzgTCEg7KlIX-IPEQGatghCrwg&s&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 4"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677016"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSToODTKqCc6GJBe8yjVFE8xX_lmQcQLAfaJX33p9SMTZGrTQFCJA&s&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 3"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677017"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjF_-oHiU9X1EVEjcc-BCHfSoYiXYqJT-teybZZbFI40qPoo11Jg&s&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 6"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677018"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGJnE8PMtIjCmAWIlq3ei3SsS811x91tli8T8kiJ9rNcX3gDA3ag&s&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 7"></a>
-
-    <a href="http://tyqw.site:2052/10675785266958/99039021857485/677019"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5P1vtFKkZjFS570q9OD0I-a7qTl1Ma2akfTxnnvAgN0BYaSbykw&s&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="beIN Sports 8"></a>
-
-    <a href="https://iptv-proxy-wjpz.onrender.com/live/9.m3u8"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRowPfUbfV8VxIyaCf01srLAutIXe3j0PGSPRvYALL6T0NlseNYH9AVyqLI9fSTDf8&s=10&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="Alwan Sport 1"></a>
-       
-    <a href="https://iptv-proxy-wjpz.onrender.com/live/10.m3u8"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRowPfUbfV8VxIyaCf01srLAutIXe3j0PGSPRvYALL6T0NlseNYH9AVyqLI9fSTDf8&s=10&ec=121966410" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="Alwan Sport 2"></a>
-
-    <a href="https://iptv-proxy-wjpz.onrender.com/live/11.m3u8"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRowPfUbfV8VxIyaCf01srLAutIXe3j0PGSPRvYALL6T0NlseNYH9AVyqLI9fSTDf8&s=10&ec=121966411" style="height: 70px; width: auto; display: block; margin: 0 auto;" alt="Alwan Sport 3"></a>
-
+    "name": "beIN Sports 1 ",
+    "logo": "https://lo1.in/bss/bsS1.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677012"
+  },
+  "2": {
+    "name": "beIN Sports 2",
+    "logo": "https://lo1.in/bss/bsS2.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677013"
+  },
+  "3": {
+    "name": "beIN Sports 3",
+    "logo": "https://lo1.in/bss/bs3.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677014"
+  },
+  "4": {
+    "name": "beIN Sports 4",
+    "logo": "https://lo1.in/bss/bs4.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677015"
+  },
+  "5": {
+    "name": "beIN Sports 5",
+    "logo": "https://lo1.in/bein/beinn5.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677016"
+  },
+  "6": {
+    "name": "beIN Sports 6",
+    "logo": "https://lo1.in/bein/beinn6.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677017"
   }
 };
 
