@@ -15,17 +15,23 @@ app.use((req, res, next) => {
 });
 
 // مصفوفة القنوات الآمنة والمخفية داخل السيرفر (لن يراها المستخدم أبداً)
-const channels = {
-    "1": { name: "beIN Sports 1", logo: "https://lo1.in/bss/bsS1.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012" },
-    "2": { name: "beIN Sports 2", logo: "https://lo1.in/bss/bsS2.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677013" },
-    "3": { name: "beIN Sports 3", logo: "https://lo1.in/bss/bs3.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677014" },
-    "4": { name: "beIN Sports 4", logo: "https://lo1.in/bss/bs4.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677015" },
-    "5": { name: "beIN Sports 5", logo: "https://lo1.in/bein/beinn5.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677016" },
-    "6": { name: "beIN Sports 6", logo: "https://lo1.in/bein/beinn6.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677017" },
-    "7": { name: "beIN Sports 7", logo: "https://lo1.in/bss/BEIN SPORTS 07.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677018" },
-    "8": { name: "beIN Sports 8", logo: "https://lo1.in/bss/bss8.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677019" }
-};
-
+const iptvMatrix = [
+  { id: "1", name: "beIN Sports 1", logo: "https://lo1.in/bss/bsS1.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012?output=ts" },
+  { id: "2", name: "beIN Sports 2", logo: "https://lo1.in/bss/bsS2.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677013?output=ts" },
+  { id: "3", name: "beIN Sports 3", logo: "https://lo1.in/bss/bs3.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677014?output=ts" },
+  { id: "4", name: "beIN Sports 4", logo: "https://lo1.in/bss/bs4.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677015?output=ts" },
+  { id: "5", name: "beIN Sports 5", logo: "https://lo1.in/bein/beinn5.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677016?output=ts" },
+  { id: "6", name: "beIN Sports 6", logo: "https://lo1.in/bein/beinn6.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677017?output=ts" },
+  { id: "7", name: "beIN Sports 7", logo: "https://lo1.in/bss/BEIN SPORTS 07.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677018?output=ts" },
+  { id: "8", name: "beIN Sports 8", logo: "https://lo1.in/bss/bss8.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677019?output=ts" },
+  { id: "9", name: "Alwan Sport 1", logo: "https://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649689?output=ts" },
+  { id: "10", name: "Alwan Sport 2", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649690?output=ts" },
+  { id: "11", name: "Alwan Sport 3", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649691?output=ts" },
+  { id: "12", name: "Alwan Sport 4", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649692?output=ts" },
+  { id: "13", name: "Alwan Sport 5", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649693?output=ts" },
+  { id: "14", name: "Alwan Sport 6", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649694?output=ts" },
+  { id: "15", name: "Alwan Sport 7", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012:?output=ts" },
+];
 // إرسال أسماء القنوات والشعارات فقط للواجهة بدون إرسال الروابط الحقيقية (حماية 100%)
 app.get('/channel/info-all', (req, res) => {
     const safeChannels = {};
