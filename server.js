@@ -16,13 +16,12 @@ app.use((req, res, next) => {
     next();
 });
 
-// دالة برمجية مبسطة ونقية لقراءة وتحليل ملف القنوات M3U بدون تعقيد
+// دالة برمجية مطورة وقوية لقراءة وتحليل ملف القنوات M3U بدقة
 function parseM3U() {
     const filePath = path.join(__dirname, 'channels.m3u');
     if (!fs.existsSync(filePath)) return {};
     
     const content = fs.readFileSync(filePath, 'utf-8');
-    // تقسيم الأسطر بشكل اعتيادي مبسط وتجنب الرموز المعقدة
     const lines = content.split('\n'); 
     const channels = {};
     let currentChannel = {};
@@ -32,14 +31,14 @@ function parseM3U() {
         const line = lines[i].trim();
         
         if (line.startsWith('#EXTINF:')) {
-            // استخراج اسم القناة بعد الفاصلة
+            // استخراج اسم القناة بعد آخر فاصلة
             const commaIndex = line.lastIndexOf(',');
             let channelName = `قناة ${idCounter}`;
             if (commaIndex !== -1) {
                 channelName = line.substring(commaIndex + 1).trim();
             }
 
-            // استخراج رابط الشعار الذكي
+            // استخراج رابط الشعار بطريقة معزولة وآمنة لمنع التشوه
             let logoUrl = 'https://icons8.com';
             const logoMatch = line.match(/tvg-logo="([^"]+)"/);
             if (logoMatch && logoMatch[1]) {
