@@ -56,12 +56,15 @@ app.get('/live/:id', (req, res) => {
         path: parsedUrl.pathname + parsedUrl.search,
         method: 'GET',
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
-            'Accept': '*/*',
-            'Connection': 'keep-alive'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'max-age=0'
         },
         timeout: 20000
     };
+
 
     // إرسال طلب البث بطريقة الأنابيب المباشرة فريم بفريم (Streaming Pipe)
     const proxyReq = client.get(options, (proxyRes) => {
