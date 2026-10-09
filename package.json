@@ -1,14 +1,13 @@
 {
-  "name": "iptv-cors-proxy",
+  "name": "my-tviq-secure-proxy",
   "version": "1.0.0",
-  "description": "سيرفر وسيط لتشغيل البث المباشر وتخطي حظر كورس",
-  "main": "server.js",
+  "description": "Secure IPTV Proxy Core for my_tviq",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "http-proxy-middleware": "^3.0.0",
-    "cors": "^2.8.5"
+    "axios": "^1.7.2"
   }
 }
