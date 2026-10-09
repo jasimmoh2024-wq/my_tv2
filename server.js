@@ -1,77 +1,81 @@
 const express = require('express');
-const cors = require('cors');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const fs = require('fs');
-const path = require('path');
-
+const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// تفعيل CORS بالكامل مع السماح بجميع الترويسات
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Range', 'User-Agent']
-}));
+// 📡 🎯 رابط الـ Raw الصافي لملف قنوات باقتك المحدثة داخل مستودع غيت هاب مالتك عينه
+const GITHUB_M3U_URL = "https://githubusercontent.com";
 
-// تقديم ملفات الموقع تلقائياً
-app.use(express.static(path.join(__dirname)));
+// 🛡️ تفعيل ميزة التخطي والعبور الآمن لكافة المتصفحات والتطبيقات (CORS Free Engine)
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
-function getChannelUrl(channelId) {
+// 🧭 المسار الأول: جلب وتفكيك ملف الـ M3U وتحويل القنوات لـ مصفوفة JSON صافية ومحمية
+app.get('/channels', async (req, res) => {
     try {
-        const filePath = path.join(__dirname, 'channels.json');
-        if (!fs.existsSync(filePath)) return null;
-        const fileData = fs.readFileSync(filePath, 'utf8');
-        const channels = JSON.parse(fileData);
-        const channel = channels.find(c => c.id === channelId);
-        return channel ? channel.url : null;
-    } catch (error) {
-        console.error("خطأ في قراءة ملف القنوات:", error);
-        return null;
-    }
-}
+        const response = await axios.get(GITHUB_M3U_URL);
+        const m3uText = response.data;
+        const lines = m3uText.split('\n');
+        
+        let channelsList = [];
+        let currentName = "";
+        let idCounter = 1;
 
-app.use('/stream/:channelId', (req, res, next) => {
-    const channelId = req.params.channelId;
-    const targetUrl = getChannelUrl(channelId);
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
 
-    if (!targetUrl) {
-        return res.status(404).send('القناة غير موجودة');
-    }
-
-    // استخراج الدومين الأساسي فقط للسيرفر المستهدف بدون مسار القناة
-    const urlObj = new URL(targetUrl);
-    const targetOrigin = `${urlObj.protocol}//${urlObj.host}`;
-
-    createProxyMiddleware({
-        target: targetOrigin,
-        changeOrigin: true,
-        secure: false, // لتجاوز مشاكل شهادات الـ SSL غير الصالحة في بعض سيرفرات IPTV
-        pathRewrite: (path, req) => {
-            // توجيه الطلب إلى المسار الكامل الحقيقي للقناة بالكامل
-            return urlObj.pathname + urlObj.search;
-        },
-        onProxyReq: (proxyReq) => {
-            // تزوير الترويسات لتبدو تماماً كأنها قادمة من تطبيق Xtream أو مشغل حقيقي
-            proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-            proxyReq.setHeader('Referer', targetOrigin);
-            proxyReq.setHeader('Origin', targetOrigin);
-        },
-        onProxyRes: (proxyRes) => {
-            // إجبار المتصفح على قراءة البث كفيديو وتفعيل ترويسات CORS المباشرة
-            proxyRes.headers['content-type'] = 'video/mp2t';
-            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
-        },
-        onError: (err, req, res) => {
-            console.error("خطأ في جلب البث:", err.message);
-            if (!res.headersSent) {
-                res.status(500).send('فشل الاتصال بمصدر البث');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line.startsWith("#EXTINF:")) {
+                const parts = line.split(',');
+                currentName = parts.length > 1 ? parts[parts.length - 1].trim() : "Premium Channel " + idCounter;
+            } else if (line.startsWith("http")) {
+                channelsList.push({
+                    id: idCounter.toString(),
+                    name: currentName || ("Channel " + idCounter),
+                    // توليد رابط وسيط آمن يوجه طلبات المشاهدين إلى سيرفر ريندر بدلاً من سيرفرك الأصلي
+                    proxy_url: `${hostUrl}/stream/${idCounter}?stream_url=${encodeURIComponent(line)}`
+                });
+                currentName = "";
+                idCounter++;
             }
         }
-    })(req, res, next);
+        res.json(channelsList);
+    } catch (error) {
+        res.status(500).json({ error: "فشل السيرفر في جلب البيانات السحابية الحين" });
+    }
+});
+
+// 🎬 المسار الثاني: الدرع الحديدي (Reverse Proxy) لـحقن البصمة الأمنية (سر مشغلات Xtream)
+app.get('/stream/:id', async (req, res) => {
+    const targetStreamUrl = req.query.stream_url;
+    if (!targetStreamUrl) {
+        return res.status(400).send("رابط البث الحي مفقود");
+    }
+
+    try {
+        // الحركة السرية: إرسال الطلب للسيرفر الرئيسي ببصمة مخصصة تمنع حظر الحساب كلياً بسبب التعدد
+        const streamResponse = await axios({
+            method: 'get',
+            url: targetStreamUrl,
+            responseType: 'stream',
+            headers: {
+                "Referer": "http://tyqw.site",
+                "User-Agent": "LC_CORE_PLAYER/2.1 (Linux; Android 13; Mobile) ExoPlayerLib/2.18.5"
+            }
+        });
+
+        // إيقاظ ولصق ترميز دفق الـ TS الرقمي الصافي المباشر (video/mp2t) رغماً عن غياب الامتداد بالرابط
+        res.setHeader('Content-Type', streamResponse.headers['content-type'] || 'video/mp2t');
+        streamResponse.data.pipe(res);
+
+    } catch (error) {
+        res.status(500).send("تعذر إنعاش دفق القناة من السيرفر الرئيسي الحين");
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`السيرفر يعمل الآن على المنفذ: ${PORT}`);
+    console.log(`الدرع الحديدي يعمل بنجاح على البورت: ${PORT}`);
 });
