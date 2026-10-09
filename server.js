@@ -22,12 +22,12 @@ const channels = {
         url: "http://tyqw.site:2052/10675785266958/99039021857485/677012"
     },
     "2": {
-        name: " 2",
+        name: "beIN Sports 2",
         logo: "https://icons8.com",
         url: "http://tyqw.site:2052/10675785266958/99039021857485/677013"
     },
     "3": {
-        name: " 3",
+        name: "beIN Sports 3",
         logo: "https://icons8.com",
         url: "http://tyqw.site:2052/10675785266958/99039021857485/677014"
     },
