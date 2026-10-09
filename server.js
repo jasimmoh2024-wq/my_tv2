@@ -19,42 +19,42 @@ const channels = {
     "1": {
         name: "beIN Sports 1",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677012"
     },
     "2": {
         name: " 2",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677013"
     },
     "3": {
         name: " 3",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677014"
     },
     "4": {
         name: " 4",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677015"
     },
     "5": {
         name: "5",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677016"
     },
     "6": {
         name: "6",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677017"
     },
     "7": {
         name: " 7",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677018"
     },
     "8": {
         name: " 8",
         logo: "https://icons8.com",
-        url: "http://xtream-server.com"
+        url: "http://tyqw.site:2052/10675785266958/99039021857485/677019"
     }
 };
 
