@@ -1,7 +1,7 @@
 {
-  "name": "xtream-secure-proxy",
+  "name": "iptv-m3u-proxy",
   "version": "1.0.0",
-  "description": "Secure IPTV Stream Proxy for Render and GitHub",
+  "description": "Secure IPTV M3U Streaming Proxy for Render",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
