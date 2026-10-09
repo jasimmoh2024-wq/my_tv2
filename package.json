@@ -1,15 +1,14 @@
 {
-  "name": "iptv-m3u-proxy",
+  "name": "iptv-cors-proxy",
   "version": "1.0.0",
-  "description": "Secure IPTV M3U Streaming Proxy for Render",
+  "description": "سيرفر وسيط لتشغيل البث المباشر وتخطي حظر كورس",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.0",
+    "cors": "^2.8.5"
   }
 }
