@@ -6,16 +6,18 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// تفعيل CORS الشامل لمنع أي حظر للشبكة مع المتصفحات والتطبيقات
+// تفعيل CORS الشامل للسماح للمتصفح بالوصول الكامل للبث
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
     res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
     next();
 });
 
-// 🛠️ مصفوفة القنوات بالرابط الرئيسي المباشر لتخطي الحظر
-// [ ملاحظة: تم تعديل النطاق ليقرأ من الرابط الرئيسي الجديد مباشرة لتجنب حظر Cloudflare ]
+// مصفوفة القنوات بالـ IP المباشر (تأكد من كتابة الـ IP الصحيح هنا بدلاً من الدومين)
 const channels = {
     "1": { name: "beIN Sports 1", logo: "https://lo1.in/bss/bsS1.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012" },
     "2": { name: "beIN Sports 2", logo: "https://lo1.in/bss/bsS2.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677013" },
@@ -27,66 +29,52 @@ const channels = {
     "8": { name: "beIN Sports 8", logo: "https://lo1.in/bss/bss8.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677019" }
 };
 
-// مسار جلب قائمة القنوات للواجهة
 app.get('/channel/info-all', (req, res) => {
     res.json(channels); 
 });
 
-// مسار معالجة وتشغيل البث المباشر بأعلى استقرار
 app.get('/live/:id', (req, res) => {
     let channelId = req.params.id;
-    
     if (channelId.endsWith('.ts')) { channelId = channelId.replace('.ts', ''); }
-    if (channelId.endsWith('.m3u8')) { channelId = channelId.replace('.m3u8', ''); }
 
     const channel = channels[channelId];
     if (!channel) return res.status(404).send('القناة غير موجودة');
 
-    const targetUrl = channel.url.includes('?') ? `${channel.url}&output=ts` : `${channel.url}?output=ts`;
+    const targetUrl = `${channel.url}?output=ts`;
     const parsedUrl = new URL(targetUrl);
-    const client = parsedUrl.protocol === 'https:' ? https : http;
+    
+    // إجبار النظام على استخدام http العادي المتوافق مع منفذ سيرفر البث الخارجي 2052
+    const client = http; 
 
     const options = {
         hostname: parsedUrl.hostname,
-        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+        port: parsedUrl.port || 80,
         path: parsedUrl.pathname + parsedUrl.search,
         method: 'GET',
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             'Accept': '*/*',
             'Connection': 'keep-alive'
-        },
-        timeout: 20000
+        }
     };
 
     const proxyReq = client.get(options, (proxyRes) => {
-        res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'video/mp2t');
-        res.setHeader('Cache-Control', 'no-cache');
+        // إرجاع ترويسات متوافقة مع مشغلات بث الويب والـ MPEG-TS
+        res.setHeader('Content-Type', 'video/mp2t');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
-
-        if (proxyRes.headers['accept-ranges']) {
-            res.setHeader('Accept-Ranges', proxyRes.headers['accept-ranges']);
-        }
 
         proxyRes.pipe(res);
     });
 
     proxyReq.on('error', (err) => {
-        console.error("خطأ البث:", err.message);
-        if (!res.headersSent) {
-            res.status(500).send('تعذر الاتصال بالسيرفر الرئيسي.');
-        }
+        console.error("Proxy Error:", err.message);
+        if (!res.headersSent) res.status(500).send('خطأ اتصال بالسيرفر الأصلي');
     });
 
-    req.on('close', () => {
-        proxyReq.destroy();
-    });
+    req.on('close', () => { proxyReq.destroy(); });
 });
 
-app.get('/', (req, res) => {
-    res.status(200).send('Server is Live and Running!');
-});
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.get('/', (req, res) => res.status(200).send('Proxy Server Running!'));
+app.listen(PORT, () => console.log(`Running on port ${PORT}`));
