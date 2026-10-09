@@ -1,38 +1,14 @@
-// استبدل دالة parseM3U القديمة بهذه الدالة الدقيقة:
-function parseM3U() {
-    const filePath = path.join(__dirname, 'channels.m3u');
-    if (!fs.existsSync(filePath)) return {};
-    
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const lines = content.split(\(/\r\)?\n/);
-    const channels = {};
-    let currentChannel = {};
-    let idCounter = 1;
-
-    lines.forEach(line => {
-        line = line.trim();
-        if (line.startsWith('#EXTINF:')) {
-            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-            const nameParts = line.split(',');
-            const channelName = nameParts.length > 1 ? nameParts[nameParts.length - 1].trim() : `قناة ${idCounter}`;
-            currentChannel = {
-                name: channelName,
-                logo: logoMatch ? logoMatch[1] : 'https://icons8.com'
-            };
-        } else if (line.startsWith('http')) {
-            channels[idCounter] = {
-                name: currentChannel.name || `قناة ${idCounter}`,
-                logo: currentChannel.logo || 'https://icons8.com',
-                url: line
-            };
-            idCounter++;
-            currentChannel = {}; // تصفير المتغير للقناة التالية
-        }
+// مسار إرسال الأسماء والشعارات فقط لحماية الروابط الأصلية من السرقة
+app.get('/channel/info-all', (req, res) => {
+    const channels = parseM3U();
+    const safeChannels = {};
+    Object.keys(channels).forEach(id => {
+        safeChannels[id] = { name: channels[id].name, logo: channels[id].logo };
     });
-    return channels;
-}
+    res.json(safeChannels); 
+});
 
-// استبدل مسار تشغيل البث المباشر /live/:id بهذا الكود لتجاوز حظر المتصفحات:
+// مسار معالجة سحب البث وإعادة تدفقه بخفاء تام
 app.get('/live/:id', (req, res) => {
     let channelId = req.params.id;
     if (channelId.endsWith('.ts')) channelId = channelId.replace('.ts', '');
@@ -51,7 +27,9 @@ app.get('/live/:id', (req, res) => {
         path: parsedUrl.pathname + parsedUrl.search,
         method: 'GET',
         headers: {
+            // محاكاة نظام أندرويد ومشغل ExoPlayer لتخطي جدران حماية الـ IPTV ومنع التعليق
             'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
+            'X-Forwarded-For': '1.1.1.1', 
             'Accept': '*/*',
             'Connection': 'keep-alive'
         }
@@ -73,4 +51,12 @@ app.get('/live/:id', (req, res) => {
         if (!res.headersSent) res.status(500).send('خطأ اتصال بالسيرفر الأصلي'); 
     });
     req.on('close', () => proxyReq.destroy());
+});
+
+app.get('/', (req, res) => {
+    res.status(200).send('Proxy Server for 44 Channels is Running and Secured!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is successfully running on port ${PORT}`);
 });
