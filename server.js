@@ -5,7 +5,7 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// تفعيل الـ CORS لتشغيل المشغل في صفحة الـ HTML بدون حظر
+// تفعيل CORS الشامل للسماح للمشغل بالوصول إلى البث بدون قيود المتصفح
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
@@ -14,7 +14,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// مصفوفة القنوات الآمنة والمخفية داخل السيرفر (لن يراها المستخدم أبداً)
+// 🔒 مصفوفة القنوات المحقونة والمحمية بالكامل داخل السيرفر (الجزء 1)
 const iptvMatrix = [
   { id: "1", name: "beIN Sports 1", logo: "https://lo1.in/bss/bsS1.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012?output=ts" },
   { id: "2", name: "beIN Sports 2", logo: "https://lo1.in/bss/bsS2.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677013?output=ts" },
@@ -22,17 +22,8 @@ const iptvMatrix = [
   { id: "4", name: "beIN Sports 4", logo: "https://lo1.in/bss/bs4.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677015?output=ts" },
   { id: "5", name: "beIN Sports 5", logo: "https://lo1.in/bein/beinn5.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677016?output=ts" },
   { id: "6", name: "beIN Sports 6", logo: "https://lo1.in/bein/beinn6.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677017?output=ts" },
-  { id: "7", name: "beIN Sports 7", logo: "https://lo1.in/bss/BEIN SPORTS 07.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677018?output=ts" },
-  { id: "8", name: "beIN Sports 8", logo: "https://lo1.in/bss/bss8.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677019?output=ts" },
-  { id: "9", name: "Alwan Sport 1", logo: "https://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649689?output=ts" },
-  { id: "10", name: "Alwan Sport 2", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649690?output=ts" },
-  { id: "11", name: "Alwan Sport 3", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649691?output=ts" },
-  { id: "12", name: "Alwan Sport 4", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649692?output=ts" },
-  { id: "13", name: "Alwan Sport 5", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649693?output=ts" },
-  { id: "14", name: "Alwan Sport 6", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://الرابط_الرئيسي_الخاص_بك:2052/10675785266958/99039021857485/649694?output=ts" },
-  { id: "15", name: "Alwan Sport 7", logo: "http://lo1.in/fwc/ALWANS.png", url: "http://tyqw.site:2052/10675785266958/99039021857485/677012:?output=ts" },
 ];
-// إرسال أسماء القنوات والشعارات فقط للواجهة بدون إرسال الروابط الحقيقية (حماية 100%)
+// مسار إرسال الأسماء والشعارات فقط لحماية الروابط الأصلية من السرقة
 app.get('/channel/info-all', (req, res) => {
     const safeChannels = {};
     Object.keys(channels).forEach(id => {
@@ -41,7 +32,7 @@ app.get('/channel/info-all', (req, res) => {
     res.json(safeChannels); 
 });
 
-// استقبال طلب البث وسحب الميديا فريم بـ فريم وإعادة ضخها للمستخدم بخفاء كامل
+// مسار معالجة سحب البث وإعادة تدفقه بخفاء تام
 app.get('/live/:id', (req, res) => {
     let channelId = req.params.id;
     if (channelId.endsWith('.ts')) channelId = channelId.replace('.ts', '');
@@ -58,33 +49,39 @@ app.get('/live/:id', (req, res) => {
         path: parsedUrl.pathname + parsedUrl.search,
         method: 'GET',
         headers: {
-            // أهم خطوة: محاكاة تطبيق أندرويد حقيقي لتخطي حظر السيرفر الأصلي ومنع التأخير
+            // محاكاة نظام أندرويد ومشغل ExoPlayer لتخطي جدران حماية الـ IPTV ومنع التعليق
             'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
-            'X-Forwarded-For': '1.1.1.1', // خداع السيرفر بأن الطلب قادم من مستخدم عادي وليس من خادم Render
+            'X-Forwarded-For': '1.1.1.1', 
             'Accept': '*/*',
             'Connection': 'keep-alive'
         }
     };
 
     const proxyReq = http.get(options, (proxyRes) => {
-        // تمرير ترويسات الفيديو المناسبة للمتصفح والمشغلات
         res.setHeader('Content-Type', 'video/mp2t');
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Connection', 'keep-alive');
 
-        // تمرير البيانات المباشرة بدون حفظ (Streaming Pipe)
+        // ضخ البيانات فريماً بفريم بشكل مباشر للمشغل
         proxyRes.pipe(res);
     });
 
     proxyReq.on('error', (err) => {
-        console.error("خطأ وسيط البث:", err.message);
-        if (!res.headersSent) res.status(500).send('خطأ اتصال بالسيرفر الأصلي');
+        console.error("Proxy Error:", err.message);
+        if (!res.headersSent) {
+            res.status(500).send('تعذر الاتصال بالسيرفر الموزع الرئيسي.');
+        }
     });
 
-    // إنهاء الاتصال فور خروج المستخدم لتوفير الباندويث ومنع الكراش
     req.on('close', () => {
         proxyReq.destroy();
     });
 });
 
-app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
+app.get('/', (req, res) => {
+    res.status(200).send('Proxy Server for 44 Channels is Running and Secured!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is successfully running on port ${PORT}`);
+});
