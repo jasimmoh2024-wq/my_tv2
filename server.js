@@ -1,14 +1,81 @@
-// مسار إرسال الأسماء والشعارات فقط لحماية الروابط الأصلية من السرقة
-app.get('/channel/info-all', (req, res) => {
-    const channels = parseM3U();
-    const safeChannels = {};
-    Object.keys(channels).forEach(id => {
-        safeChannels[id] = { name: channels[id].name, logo: channels[id].logo };
-    });
-    res.json(safeChannels); 
+const express = require('express');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { URL } = require('url');
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+// تفعيل CORS الشامل للسماح للمشغل بالوصول إلى البث بدون قيود
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
+    res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
 });
 
-// مسار معالجة سحب البث وإعادة تدفقه بخفاء تام
+// دالة برمجية مبسطة ونقية لقراءة وتحليل ملف القنوات M3U بدون تعقيد
+function parseM3U() {
+    const filePath = path.join(__dirname, 'channels.m3u');
+    if (!fs.existsSync(filePath)) return {};
+    
+    const content = fs.readFileSync(filePath, 'utf-8');
+    // تقسيم الأسطر بشكل اعتيادي مبسط وتجنب الرموز المعقدة
+    const lines = content.split('\n'); 
+    const channels = {};
+    let currentChannel = {};
+    let idCounter = 1;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('#EXTINF:')) {
+            // استخراج اسم القناة بعد الفاصلة
+            const commaIndex = line.lastIndexOf(',');
+            let channelName = `قناة ${idCounter}`;
+            if (commaIndex !== -1) {
+                channelName = line.substring(commaIndex + 1).trim();
+            }
+
+            // استخراج رابط الشعار الذكي
+            let logoUrl = 'https://icons8.com';
+            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+            if (logoMatch && logoMatch[1]) {
+                logoUrl = logoMatch[1];
+            }
+
+            currentChannel = { name: channelName, logo: logoUrl };
+        } 
+        else if (line.startsWith('http')) {
+            channels[idCounter] = {
+                name: currentChannel.name || `قناة ${idCounter}`,
+                logo: currentChannel.logo || 'https://icons8.com',
+                url: line
+            };
+            idCounter++;
+            currentChannel = {}; // تصفير البيانات للقناة التالية
+        }
+    }
+    return channels;
+}
+
+// مسار جلب قائمة القنوات للواجهة
+app.get('/channel/info-all', (req, res) => {
+    try {
+        const channels = parseM3U();
+        const safeChannels = {};
+        Object.keys(channels).forEach(id => {
+            safeChannels[id] = { name: channels[id].name, logo: channels[id].logo };
+        });
+        res.json(safeChannels);
+    } catch (err) {
+        res.status(500).json({ error: "فشل تحليل ملف القنوات" });
+    }
+});
+
+// مسار معالجة سحب البث وإعادة تدفقه بخفاء تام للمشغل
 app.get('/live/:id', (req, res) => {
     let channelId = req.params.id;
     if (channelId.endsWith('.ts')) channelId = channelId.replace('.ts', '');
@@ -17,7 +84,7 @@ app.get('/live/:id', (req, res) => {
     const channel = channels[channelId];
     if (!channel) return res.status(404).send('القناة غير موجودة');
 
-    // إضافة صيغة دفق البث المباشر للسيرفر الأصلي
+    // دمج مخرج البث الصافي مع روابط الـ IP المباشرة
     const targetUrl = channel.url.includes('?') ? `${channel.url}&output=ts` : `${channel.url}?output=ts`;
     const parsedUrl = new URL(targetUrl);
 
@@ -27,21 +94,18 @@ app.get('/live/:id', (req, res) => {
         path: parsedUrl.pathname + parsedUrl.search,
         method: 'GET',
         headers: {
-            // محاكاة نظام أندرويد ومشغل ExoPlayer لتخطي جدران حماية الـ IPTV ومنع التعليق
             'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
-            'X-Forwarded-For': '1.1.1.1', 
             'Accept': '*/*',
             'Connection': 'keep-alive'
         }
     };
 
-    // إرسال هيدرات الأمان للمتصفح قبل ضخ الفريمات لمنع الـ Mixed Content Block
     const proxyReq = http.get(options, (proxyRes) => {
         res.setHeader('Content-Type', 'video/mp2t');
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Access-Control-Allow-Origin', '*'); // تأكيد الـ CORS للبث نفسه
+        res.setHeader('Access-Control-Allow-Origin', '*'); 
 
         proxyRes.pipe(res);
     });
@@ -50,13 +114,14 @@ app.get('/live/:id', (req, res) => {
         console.error("اتصال مقطوع:", err.message);
         if (!res.headersSent) res.status(500).send('خطأ اتصال بالسيرفر الأصلي'); 
     });
+    
     req.on('close', () => proxyReq.destroy());
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send('Proxy Server for 44 Channels is Running and Secured!');
+    res.status(200).send('Secure IPTV Streaming Server is Active!');
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is successfully running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
