@@ -1,9 +1,11 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+
+// 1. تحديد منفذ البورت المتوافق إجبارياً مع خوادم Render
 const PORT = process.env.PORT || 3000;
 
-// 1. تفعيل CORS الشامل لمنع أي حظر للشبكة مع تطبيق الـ APK
+// 2. تفعيل CORS الشامل لمنع أي حظر للشبكة مع تطبيق الـ APK
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
@@ -11,46 +13,57 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2. قاعدة بيانات القنوات الحقيقية الخاصة بك
+// 3. قاعدة بيانات القنوات الحقيقية الخاصة بك
 // ⚠️ ملاحظة: استبدل الروابط التجريبية بالأسفل بروابط اشتراكك الحقيقية لكي تعمل القنوات
 const channels = {
-  "1": {
-    "name": "beIN Sports 1 ",
-    "logo": "https://lo1.in/bss/bsS1.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677012"
-  },
-  "2": {
-    "name": "beIN Sports 2",
-    "logo": "https://lo1.in/bss/bsS2.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677013"
-  },
-  "3": {
-    "name": "beIN Sports 3",
-    "logo": "https://lo1.in/bss/bs3.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677014"
-  },
-  "4": {
-    "name": "beIN Sports 4",
-    "logo": "https://lo1.in/bss/bs4.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677015"
-  },
-  "5": {
-    "name": "beIN Sports 5",
-    "logo": "https://lo1.in/bein/beinn5.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677016"
-  },
-  "6": {
-    "name": "beIN Sports 6",
-    "logo": "https://lo1.in/bein/beinn6.png",
-    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677017"
-  },
+    "1": {
+        name: "beIN Sports 1",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "2": {
+        name: " 2",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "3": {
+        name: " 3",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "4": {
+        name: " 4",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "5": {
+        name: "5",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "6": {
+        name: "6",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "7": {
+        name: " 7",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    },
+    "8": {
+        name: " 8",
+        logo: "https://icons8.com",
+        url: "http://xtream-server.com"
+    }
+};
 
-// 3. مسار جلب قائمة القنوات الحقيقية للواجهة
+// 4. مسار جلب قائمة القنوات الحقيقية للواجهة
 app.get('/channel/info-all', (req, res) => {
     res.json(channels);
 });
 
-// 4. مسار معالجة البث المباشر المحصن لمنع انهيار السيرفر وتخطي حظر Xtream
+// 5. مسار معالجة وحقن البث المباشر وتخطي حظر سيرفرات Xtream
 app.get('/channel/stream/:id', async (req, res) => {
     const channel = channels[req.params.id];
     if (!channel) return res.status(404).send('القناة غير موجودة');
@@ -62,7 +75,7 @@ app.get('/channel/stream/:id', async (req, res) => {
             responseType: 'stream',
             timeout: 20000, // مهلة اتصال 20 ثانية لمنع التعليق
             headers: {
-                // إيهام السيرفر المزوّد أن الطلب قادم من تطبيق أندرويد رسمي
+                // تزوير الترويسات ليوهم سيرفر Xtream أن الطلب قادم من ExoPlayer رسمي ونظام أندرويد
                 'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
                 'Accept': '*/*',
                 'Connection': 'keep-alive'
@@ -84,20 +97,18 @@ app.get('/channel/stream/:id', async (req, res) => {
 
     } catch (error) {
         console.error("خطأ البث المباشر:", error.message);
-        
-        // منع انهيار السيرفر عبر إرجاع استجابة آمنة بدلاً من إيقاف الخدمة
         if (!res.headersSent) {
-            res.status(500).send('تعذر جلب البث، تأكد من صحة روابط القنوات المكتوبة بالسيرفر.');
+            res.status(500).send('تعذر جلب البث، تأكد من صحة روابط القنوات.');
         }
     }
 });
 
-// دالة فحص سلامة السيرفر لمنصة Render
+// 6. دالة فحص سلامة السيرفر لمنصة Render (مهمة جداً لنجاح الـ Deploy)
 app.get('/', (req, res) => {
     res.status(200).send('Server is Live and Running!');
 });
 
-// تشغيل السيرفر
-app.listen(PORT, '0.0.0.0', () => {
+// 7. تشغيل السيرفر بالصيغة القياسية لـ Render لحل مشكلة الانهيار نهائياً
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
