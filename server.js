@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
+// تحديد منفذ البورت المتوافق إجبارياً مع خوادم Render
 const PORT = process.env.PORT || 3000;
 
 // تفعيل CORS الشامل لمنع أي حظر للشبكة مع تطبيق الـ APK
@@ -12,8 +13,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// قاعدة بيانات القنوات الحقيقية الخاصة بك
-// ⚠️ ملاحظة: استبدل روابط http://xtream-server.com بروابط اشتراكك الحقيقية لكي تعمل القنوات
+// ⚠️ قاعدة بيانات القنوات الحقيقية الخاصة بك
+// استبدل الروابط التجريبية (http://xtream-server.com...) بروابط اشتراكك الحقيقية لكي تعمل القنوات
 const channels = {
   "1": {
     "name": "beIN Sports 1 ",
@@ -44,34 +45,410 @@ const channels = {
     "name": "beIN Sports 6",
     "logo": "https://lo1.in/bein/beinn6.png",
     "url": "http://tyqw.site:2052/10675785266958/99039021857485/677017"
+  },
+  "7": {
+    "name": "beIN Sports 7",
+    "logo": "https://lo1.in/bss/BEIN SPORTS 07.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677018"
+  },
+  "8": {
+    "name": "beIN Sports 8",
+    "logo": "https://lo1.in/bss/bss8.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/677019"
+  },
+  "9": {
+    "name": "Alwan Sport 1",
+    "logo": "https://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649689"
+  },
+  "10": {
+    "name": "Alwan Sport 2",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649690"
+  },
+  "11": {
+    "name": "Alwan Sport 3",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649691"
+  },
+  "12": {
+    "name": "Alwan Sport 4",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649692"
+  },
+  "13": {
+    "name": "Alwan Sport 5",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649693"
+  },
+  "14": {
+    "name": "Alwan Sport 6",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649694"
+  },
+  "15": {
+    "name": "Alwan Sport 7",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649695"
+  },
+  "16": {
+    "name": "Alwan Sport 8",
+    "logo": "http://lo1.in/fwc/ALWANS.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/649696"
+  },
+  "17": {
+    "name": "BEIN MOVIES 1",
+    "logo": "https://lo1.in/beinn/beinm1pre0.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/427"
+  },
+  "18": {
+    "name": "BEIN MOVIES 2",
+    "logo": "https://lo1.in/beinn/beinm2act0.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/428"
+  },
+  "19": {
+    "name": "BEIN MOVIES 3",
+    "logo": "https://lo1.in/beinn/bm3.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/429"
+  },
+  "20": {
+    "name": "BEIN MOVIES 4",
+    "logo": "https://lo1.in/beinn/beinm4famm.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/430"
+  },
+  "21": {
+    "name": "BEIN SERIES 1",
+    "logo": "https://lo1.in/beinn/beinser100.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/431"
+  },
+  "22": {
+    "name": "BEIN SERIES 2",
+    "logo": "https://lo1.in/beinn/beinser20.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/432"
+  },
+  "23": {
+    "name": "BEIN DRAMA",
+    "logo": "https://lo1.in/FCB/beinet.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/433"
+  },
+  "24": {
+    "name": "ViVo OSCAR",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192835"
+  },
+  "25": {
+    "name": "ViVo CLUB",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192834"
+  },
+  "26": {
+    "name": "ViVo SHOWTIME",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http>//tyqw.site:2052/10675785266958/99039021857485/192836"
+  },
+  "27": {
+    "name": "ViVo PLUS",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192837"
+  },
+  "28": {
+    "name": "ViVo MOVIES",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192838"
+  },
+  "29": {
+    "name": "ViVo SENTRAL",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192839"
+  },
+  "30": {
+    "name": "ViVo ONLINE",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192842"
+  },
+  "31": {
+    "name": "ViVo CRYSTAL",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192843"
+  },
+  "32": {
+    "name": "ViVo WAR TIME",
+    "logo": "https://static.vecteezy.com/system/resources/previews/054/650/800/non_2x/vivo-logo-rounded-vivo-logo-free-png.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192841"
+  },
+  "33": {
+    "name": "Signal Comedy",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192634"
+  },
+  "34": {
+    "name": "Signal Action",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192633"
+  },
+  "35": {
+    "name": "Signal Cinema",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192635"
+  },
+  "36": {
+    "name": "Signal AFLAM",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192636"
+  },
+  "37": {
+    "name": "Signal CLASSIC",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192637"
+  },
+  "38": {
+    "name": "Signal 90s",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192638"
+  },
+  "39": {
+    "name": "Signal VOX",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192639"
+  },
+  "40": {
+    "name": "Signal GOLD",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192640"
+  },
+  "41": {
+    "name": "Signal ANIME",
+    "logo": "https://images.seeklogo.com/logo-png/12/2/signal-logo-png_seeklogo-126441.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192642"
+  },
+  "42": {
+    "name": "SHAHID ACTION",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192749"
+  },
+  "43": {
+    "name": "SHAHID Comedy",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192739"
+  },
+  "44": {
+    "name": "SHAHID MARVEL",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192740"
+  },
+  "45": {
+    "name": "SHAHID ASIAN",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192742"
+  },
+  "46": {
+    "name": "SHAHID BOLLYWOOD",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192743"
+  },
+  "47": {
+    "name": "SHAHID WRESTLING",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192744"
+  },
+  "48": {
+    "name": "SHAHID Animation AR",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192745"
+  },
+  "49": {
+    "name": "SHAHID Animation EN",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/192746"
+  },
+  "50": {
+    "name": "SHAHID MOVIES 1",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8"
+  },
+  "51": {
+    "name": "SHAHID MOVIES 2",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx007/playlist.m3u8"
+  },
+  "52": {
+    "name": "SHAHID 1",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx017/playlist.m3u8"
+  },
+  "53": {
+    "name": "SHAHID 2",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx015/playlist.m3u8"
+  },
+  "54": {
+    "name": "SHAHID 3",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx014/playlist.m3u8"
+  },
+  "55": {
+    "name": "SHAHID 4",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx010/playlist.m3u8"
+  },
+  "56": {
+    "name": "SHAHID 5",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx013/playlist.m3u8"
+  },
+  "57": {
+    "name": "SHAHID 6",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx003/playlist.m3u8"
+  },
+  "58": {
+    "name": "SHAHID 7",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx005/playlist.m3u8"
+  },
+  "59": {
+    "name": "SHAHID 8",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx008/playlist.m3u8"
+  },
+  "60": {
+    "name": "SHAHID 9",
+    "logo": "https://lo1.in/fwc/shahid.png",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx009/playlist.m3u8"
+  },
+  "61": {
+    "name": "WILD",
+    "logo": "https://banner2.cleanpng.com/20180711/phz/kisspng-nat-geo-wild-national-geographic-television-show-t-tron-legacy-logo-5b45a4a81150c8.2022016915312907920709.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625061"
+  },
+  "62": {
+    "name": "travel",
+    "logo": "https://images.seeklogo.com/logo-png/32/1/travel-channel-logo-png_seeklogo-326359.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625063"
+  },
+  "63": {
+    "name": "National Geographic Abu Dhabi",
+    "logo": "https://arabsciences.com/wp-content/uploads/2010/03/NAT_GEO_Abu_Dhabi.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625058"
+  },
+  "64": {
+    "name": "الشروق الوثائقية",
+    "logo": "https://i.ytimg.com/vi/IB1r2H2lkBw/sddefault.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625067"
+  },
+  "65": {
+    "name": "DISCOVERY",
+    "logo": "https://banner2.cleanpng.com/20180508/rlw/avdx7n1im.webp",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625069"
+  },
+  "66": {
+    "name": "Animal Planet",
+    "logo": "https://e7.pngegg.com/pngimages/694/46/png-clipart-animal-planet-logo-icons-logos-emojis-iconic-brands.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625075"
+  },
+  "67": {
+    "name": "H HISORY",
+    "logo": "https://www.broadbandtvnews.com/wp-content/uploads/2008/11/history-id.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625076"
+  },
+  "68": {
+    "name": "Discovery",
+    "logo": "https://toppng.com/uploads/preview/discovery-channel-logo-vector-11574229905pblh5eesph.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625080"
+  },
+  "69": {
+    "name": "ID",
+    "logo": "https://www.pngarts.com/files/11/ID-Channel-Logo-PNG-Image.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/625081"
+  },
+  "70": {
+    "name": "Nickelodeon 1",
+    "logo": "https://w7.pngwing.com/pngs/350/177/png-transparent-nickelodeon-logo-nick-jr-television-show-cartoon-logo-miscellaneous-text-orange-thumbnail.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/151195"
+  },
+  "71": {
+    "name": "Nickelodeon 2",
+    "logo": "https://w7.pngwing.com/pngs/350/177/png-transparent-nickelodeon-logo-nick-jr-television-show-cartoon-logo-miscellaneous-text-orange-thumbnail.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/151192"
+  },
+  "72": {
+    "name": "Baraem",
+    "logo": "https://i.pinimg.com/564x/d9/76/0a/d9760ae15be233d2d955987f4497af86.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/443"
+  },
+  "73": {
+    "name": "جيم",
+    "logo": "https://e7.pngegg.com/pngimages/482/774/png-clipart-jeem-tv-satellite-television-television-channel-bein-sports-others-television-logo.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/444"
+  },
+  "74": {
+    "name": "CN",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Cartoon_Network_Arabic_logo.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/426"
+  },
+  "75": {
+    "name": "Baby tv",
+    "logo": "https://static.wikia.nocookie.net/logopedia/images/2/21/LogoBabyTV-2021-MAIN_logo.png",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/442
+  },
+  "76": {
+    "name": "TOM And jerry 1",
+    "logo": "https://icon2.cleanpng.com/20180817/kxq/kisspng-tom-cat-jerry-mouse-tom-and-jerry-nibbles-cartoon-tom-and-jerry-cartoon-logo-png-free-png-images-t-5b766c5ba018f9.9581577815344876436558.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193324"
+  },
+  "77": {
+    "name": "TOM And jerry 2",
+    "logo": "https://icon2.cleanpng.com/20180817/kxq/kisspng-tom-cat-jerry-mouse-tom-and-jerry-nibbles-cartoon-tom-and-jerry-cartoon-logo-png-free-png-images-t-5b766c5ba018f9.9581577815344876436558.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193323"
+  },
+  "78": {
+    "name": "TOM And jerry 3",
+    "logo": "https://icon2.cleanpng.com/20180817/kxq/kisspng-tom-cat-jerry-mouse-tom-and-jerry-nibbles-cartoon-tom-and-jerry-cartoon-logo-png-free-png-images-t-5b766c5ba018f9.9581577815344876436558.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193321"
+  },
+  "79": {
+    "name": "pink panther",
+    "logo": "https://i.pinimg.com/736x/c4/ec/35/c4ec35377f9a02c1dbf13198f0550bcc.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193316"
+  },
+  "80": {
+    "name": "Kids Music 1",
+    "logo": "https://img.magnific.com/premium-vector/kids-channel-logo-template-design-use-live-stream-social-media-logo_57082-2311.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193350"
+  },
+  "81": {
+    "name": "Kids Music 2",
+    "logo": "https://img.magnific.com/premium-vector/kids-channel-logo-template-design-use-live-stream-social-media-logo_57082-2311.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193347"
+  },
+  "82": {
+    "name": "Kids Music 3",
+    "logo": "https://img.magnific.com/premium-vector/kids-channel-logo-template-design-use-live-stream-social-media-logo_57082-2311.jpg",
+    "url": "http://tyqw.site:2052/10675785266958/99039021857485/193346"
+  },
+  "83": {
+    "name": "Kids Music 4",
+    "logo": "https://img.magnific.com/premium-vector/kids-channel-logo-template-design-use-live-stream-social-media-logo_57082-2311.jpg",
+    "url": "http://http://tyqw.site:2052/10675785266958/99039021857485/193348"
   }
 };
 
-// مسار جلب قائمة القنوات الحقيقية للواجهة
+// دالة جلب البيانات الذكية المدعومة بنظام الـ JSONP لتخطي حظر الـ APK والـ WebView
 app.get('/channel/info-all', (req, res) => {
-    res.json(channels);
+    res.jsonp(channels); 
 });
 
-// مسار معالجة وحقن البث المباشر الذكي المتوافق مع امتداد طلب Xtream و ExoPlayer
+// مسار معالجة وحقن البث المباشر وتخطي حظر سيرفرات Xtream
 app.get('/channel/stream/:id', async (req, res) => {
-    // السحر هنا: إزالة امتداد .ts من المعرف الحركي إذا أرسله المشغل لكي نصل للمعرف الأصلي في قاعدة البيانات
-    let channelId = req.params.id;
-    if (channelId.endsWith('.ts')) {
-        channelId = channelId.replace('.ts', '');
-    }
-
-    const channel = channels[channelId];
+    const channel = channels[req.params.id];
     if (!channel) return res.status(404).send('القناة غير موجودة');
 
     try {
-        // محاكاة طلب البث الحي الصريح بإضافة صيغة التمرير الافتراضية لـ Xtream
-        const finalUrl = channel.url.includes('?') ? `${channel.url}&output=ts` : `${channel.url}?output=ts`;
-
         const response = await axios({
             method: 'get',
-            url: finalUrl,
+            url: channel.url,
             responseType: 'stream',
-            timeout: 25000, 
+            timeout: 20000, 
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Linux; Android 13; LivePlayer) ExoPlayerLib/2.18.1',
                 'Accept': '*/*',
@@ -79,8 +456,8 @@ app.get('/channel/stream/:id', async (req, res) => {
             }
         });
 
-        // حقن ترويسة الفيديو المباشر لإرضاء نواة الأندرويد
-        res.setHeader('Content-Type', 'video/mp2t');
+        const contentType = response.headers['content-type'] || 'video/mp2t';
+        res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
@@ -91,9 +468,9 @@ app.get('/channel/stream/:id', async (req, res) => {
         response.data.pipe(res);
 
     } catch (error) {
-        console.error("خطأ البث المباشر الممرر عبر Xtream:", error.message);
+        console.error("خطأ البث المباشر:", error.message);
         if (!res.headersSent) {
-            res.status(500).send('خطأ في جلب دفق القناة، تأكد من اشتراك Xtream الخاص بك.');
+            res.status(500).send('تعذر جلب البث، تأكد من صحة روابط القنوات.');
         }
     }
 });
@@ -102,6 +479,7 @@ app.get('/', (req, res) => {
     res.status(200).send('Server is Live and Running!');
 });
 
+// تشغيل السيرفر بالصيغة القياسية المستقرة لـ Render
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
