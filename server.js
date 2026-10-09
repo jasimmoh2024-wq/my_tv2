@@ -2,10 +2,9 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// تحديد منفذ البورت المتوافق إجبارياً مع خوادم Render
 const PORT = process.env.PORT || 3000;
 
-// تفعيل CORS الشامل لمنع أي حظر للشبكة مع تطبيق الـ APK
+// تفعيل CORS الشامل لمنع أي حظر للشبكة مع تطبيق الـ APK والتطبيقات الخارجية
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
@@ -433,9 +432,9 @@ const channels = {
   }
 };
 
-// دالة جلب البيانات الذكية المدعومة بنظام الـ JSONP لتخطي حظر الـ APK والـ WebView
+// مسار جلب البيانات بصيغة JSON القياسية المستقرة جداً على Render
 app.get('/channel/info-all', (req, res) => {
-    res.jsonp(channels); 
+    res.json(channels); 
 });
 
 // مسار معالجة وحقن البث المباشر وتخطي حظر سيرفرات Xtream
@@ -479,7 +478,6 @@ app.get('/', (req, res) => {
     res.status(200).send('Server is Live and Running!');
 });
 
-// تشغيل السيرفر بالصيغة القياسية المستقرة لـ Render
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
