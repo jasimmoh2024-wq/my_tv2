@@ -7,66 +7,71 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// تفعيل كورس (CORS) للسماح لصفحة الـ HTML بالوصول للبث دون قيود
-app.use(cors());
+// تفعيل CORS بالكامل مع السماح بجميع الترويسات
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Range', 'User-Agent']
+}));
 
-// تقديم صفحة الـ HTML (index.html) تلقائياً عند فتح رابط السيرفر الأساسي
+// تقديم ملفات الموقع تلقائياً
 app.use(express.static(path.join(__dirname)));
 
-// دالة لقراءة مصفوفة القنوات من ملف الـ JSON الخارجي ديناميكياً
 function getChannelUrl(channelId) {
     try {
         const filePath = path.join(__dirname, 'channels.json');
-        if (!fs.existsSync(filePath)) {
-            console.error("ملف channels.json غير موجود في المجلد الرئيسي!");
-            return null;
-        }
+        if (!fs.existsSync(filePath)) return null;
         const fileData = fs.readFileSync(filePath, 'utf8');
         const channels = JSON.parse(fileData);
-        
-        // البحث عن القناة بواسطة الـ ID
         const channel = channels.find(c => c.id === channelId);
         return channel ? channel.url : null;
     } catch (error) {
-        console.error("حدث خطأ أثناء قراءة مصفوفة القنوات:", error);
+        console.error("خطأ في قراءة ملف القنوات:", error);
         return null;
     }
 }
 
-// السيرفر الوسيط (البروكسي) لتمرير البث وتخطي الحماية
 app.use('/stream/:channelId', (req, res, next) => {
     const channelId = req.params.channelId;
     const targetUrl = getChannelUrl(channelId);
 
-    // التحقق من وجود القناة
     if (!targetUrl) {
-        return res.status(404).send('عذراً، هذه القناة غير موجودة أو الرابط غير صحيح.');
+        return res.status(404).send('القناة غير موجودة');
     }
 
-    // تشغيل البروكسي وتوجيه الطلب للسيرفر الأصلي
+    // استخراج الدومين الأساسي فقط للسيرفر المستهدف بدون مسار القناة
+    const urlObj = new URL(targetUrl);
+    const targetOrigin = `${urlObj.protocol}//${urlObj.host}`;
+
     createProxyMiddleware({
-        target: targetUrl,
+        target: targetOrigin,
         changeOrigin: true,
-        pathRewrite: (path, req) => '', // إزالة مسار السيرفر المحلي وتمرير الطلب مباشرة
+        secure: false, // لتجاوز مشاكل شهادات الـ SSL غير الصالحة في بعض سيرفرات IPTV
+        pathRewrite: (path, req) => {
+            // توجيه الطلب إلى المسار الكامل الحقيقي للقناة بالكامل
+            return urlObj.pathname + urlObj.search;
+        },
         onProxyReq: (proxyReq) => {
-            // تزوير الـ User-Agent ليبدو الاتصال كأنه قادم من متصفح عادي وليس سيرفر وسيط
-            proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+            // تزوير الترويسات لتبدو تماماً كأنها قادمة من تطبيق Xtream أو مشغل حقيقي
+            proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+            proxyReq.setHeader('Referer', targetOrigin);
+            proxyReq.setHeader('Origin', targetOrigin);
         },
         onProxyRes: (proxyRes) => {
-            // إجبار المتصفح على استقبال البيانات كبث فيديو مباشر حتى لو كانت روابطك بدون امتداد
+            // إجبار المتصفح على قراءة البث كفيديو وتفعيل ترويسات CORS المباشرة
             proxyRes.headers['content-type'] = 'video/mp2t';
-            
-            // التأكد من تفعيل الكورس في الترويسات العائدة أيضاً لضمان استقرار المشغل
             proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
         },
         onError: (err, req, res) => {
-            console.error("خطأ في الاتصال بسيرفر IPTV الأساسي:", err.message);
-            res.status(500).send('فشل السيرفر الوسيط في الاتصال بمصدر البث.');
+            console.error("خطأ في جلب البث:", err.message);
+            if (!res.headersSent) {
+                res.status(500).send('فشل الاتصال بمصدر البث');
+            }
         }
     })(req, res, next);
 });
 
-// تشغيل السيرفر
 app.listen(PORT, () => {
-    console.log(`السيرفر يعمل الآن بنجاح على المنفذ: ${PORT}`);
+    console.log(`السيرفر يعمل الآن على المنفذ: ${PORT}`);
 });
