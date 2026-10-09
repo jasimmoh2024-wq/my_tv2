@@ -1,32 +1,4 @@
 #EXTM3U
-#EXTINF:-1 tvg-id="rtp3.pt" tvg-name="UEFA-PT| RTP 3 HD" tvg-logo="https://lo1.in/por/rtp3.png" group-title="VIP | UEFA PPV",UEFA-PT| RTP 3 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1177967
-#EXTINF:-1 tvg-id="sporttv1.pt" tvg-name="UEFA-PT| SPORT TV 1 4K" tvg-logo="https://lo1.in/por/sptv1.png" group-title="VIP | UEFA PPV",UEFA-PT| SPORT TV 1 4K
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1414181
-#EXTINF:-1 tvg-id="sporttv1.pt" tvg-name="UEFA-PT| SPORT TV 1 HD" tvg-logo="https://lo1.in/por/sptv1.png" group-title="VIP | UEFA PPV",UEFA-PT| SPORT TV 1 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/844232
-#EXTINF:-1 tvg-id="sporttv2.pt" tvg-name="UEFA-PT| SPORT TV 2 HD" tvg-logo="https://lo1.in/por/spttvv2.png" group-title="VIP | UEFA PPV",UEFA-PT| SPORT TV 2 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/844231
-#EXTINF:-1 tvg-id="sporttv3.pt" tvg-name="UEFA-PT| SPORT TV 3 HD" tvg-logo="https://lo1.in/por/spotv3.png" group-title="VIP | UEFA PPV",UEFA-PT| SPORT TV 3 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1410700
-#EXTINF:-1 tvg-id="rai1.it" tvg-name="UEFA-IT| RAI 1 HD" tvg-logo="https://lo1.in/it/rai10.png" group-title="VIP | UEFA PPV",UEFA-IT| RAI 1 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1410698
-#EXTINF:-1 tvg-id="rai2.it" tvg-name="UEFA-IT| RAI 2 HD" tvg-logo="https://lo1.in/it/rai20.png" group-title="VIP | UEFA PPV",UEFA-IT| RAI 2 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1410699
-#EXTINF:-1 tvg-id="raisport.it" tvg-name="UEFA-IT| RAI SPORT HD" tvg-logo="https://lo1.in/it/raisp.png" group-title="VIP | UEFA PPV",UEFA-IT| RAI SPORT HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1177970
-#EXTINF:-1 tvg-id="" tvg-name="UEFA-IT| SPORT ITALIA LIVE 24 HD" tvg-logo="https://lo1.in/it/SPORT ITALIA LIVE24.png" group-title="VIP | UEFA PPV",UEFA-IT| SPORT ITALIA LIVE 24 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1297188
-#EXTINF:-1 tvg-id="sportitalia.it" tvg-name="UEFA-IT| SPORT ITALIA HD" tvg-logo="https://lo1.in/it/sport.png" group-title="VIP | UEFA PPV",UEFA-IT| SPORT ITALIA HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1297189
-#EXTINF:-1 tvg-id="" tvg-name="UEFA-DE| SAT 1 HD" tvg-logo="https://lo1.in/ger/SAT1.png" group-title="VIP | UEFA PPV",UEFA-DE| SAT 1 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/844236
-#EXTINF:-1 tvg-id="zdf.de" tvg-name="UEFA-DE| ZDF HD" tvg-logo="https://lo1.in/ger/zdf.png" group-title="VIP | UEFA PPV",UEFA-DE| ZDF HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1410696
-#EXTINF:-1 tvg-id="one.de" tvg-name="UEFA-DE| ONE TV HD" tvg-logo="https://lo1.in/ger/1tv.png" group-title="VIP | UEFA PPV",UEFA-DE| ONE TV HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1410697
-#EXTINF:-1 tvg-id="ard.de" tvg-name="UEFA-DE| DAS ERSTE HD" tvg-logo="https://lo1.in/ger/dsr1.png" group-title="VIP | UEFA PPV",UEFA-DE| DAS ERSTE HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1177973
 #EXTINF:-1 tvg-id="" tvg-name="UEFA-DE| SKY SPORT AUSTRIA 1 HD" tvg-logo="https://lo1.in/ger/skyspau.png" group-title="VIP | UEFA PPV",UEFA-DE| SKY SPORT AUSTRIA 1 HD
 http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/844238
 #EXTINF:-1 tvg-id="" tvg-name="UEFA-DE| SKY SPORT AUSTRIA 2 HD  [NUR WÄHREND DER SPIELE]" tvg-logo="https://lo1.in/ger/skyspau.png" group-title="VIP | UEFA PPV",UEFA-DE| SKY SPORT AUSTRIA 2 HD  [NUR WÄHREND DER SPIELE]
