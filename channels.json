@@ -1,29 +1,72 @@
-#EXTM3U
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 6 4K" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 6 4K
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473967
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 6 HD" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 6 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473970
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 7 4K" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 7 4K
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473968
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 7 HD" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 7 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473971
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 8 4K" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 8 4K
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473969
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| ART ALKASS 8 HD" tvg-logo="https://lo1.in/FCB/kass.png" group-title="AR | ARAB SPORT",AR-SP| ART ALKASS 8 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1473972
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 1 FHD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 1 FHD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460403
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 1 HD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 1 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460404
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 2 FHD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 2 FHD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460405
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 2 HD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 2 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460406
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 3 FHD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 3 FHD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460407
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 3 HD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 3 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460408
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 4 FHD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 4 FHD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460409
-#EXTINF:-1 tvg-id="" tvg-name="AR-SP| STC SPORTS 4 HD" tvg-logo="https://lo1.in/ar/STC.png" group-title="AR | ARAB SPORT",AR-SP| STC SPORTS 4 HD
-http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1460410
+[
+  { "id": "ch1", "name": "القناة 1", "url": "http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/1177967", "logo": "https://lo1.in/por/rtp3.png" },
+  { "id": "ch2", "name": "القناة 2", "url": "http://tyqw.site:2052/10675785266958/99039021857485/677012", "logo": "https://placeholder.com" },
+  { "id": "ch3", "name": "القناة 3", "url": "http://tyqw.site:2052/10675785266958/99039021857485/677013", "logo": "https://placeholder.com" },
+  { "id": "ch4", "name": "القناة 4", "url": "http://tyqw.site:2052/10675785266958/99039021857485/677014", "logo": "https://placeholder.com" },
+  { "id": "ch5", "name": "القناة 5", "url": "http://tyqw.site:2052/10675785266958/99039021857485/677015", "logo": "https://placeholder.com" },
+  { "id": "ch6", "name": "القناة 6", "url": "http://your-server.com:port/live/user/pass/6.ts", "logo": "https://placeholder.com" },
+  { "id": "ch7", "name": "القناة 7", "url": "http://your-server.com:port/live/user/pass/7.ts", "logo": "https://placeholder.com" },
+  { "id": "ch8", "name": "القناة 8", "url": "http://your-server.com:port/live/user/pass/8.ts", "logo": "https://placeholder.com" },
+  { "id": "ch9", "name": "القناة 9", "url": "http://your-server.com:port/live/user/pass/9.ts", "logo": "https://placeholder.com" },
+  { "id": "ch10", "name": "القناة 10", "url": "http://your-server.com:port/live/user/pass/10.ts", "logo": "https://placeholder.com" },
+  { "id": "ch11", "name": "القناة 11", "url": "http://your-server.com:port/live/user/pass/11.ts", "logo": "https://placeholder.com" },
+  { "id": "ch12", "name": "القناة 12", "url": "http://your-server.com:port/live/user/pass/12.ts", "logo": "https://placeholder.com" },
+  { "id": "ch13", "name": "القناة 13", "url": "http://your-server.com:port/live/user/pass/13.ts", "logo": "https://placeholder.com" },
+  { "id": "ch14", "name": "القناة 14", "url": "http://your-server.com:port/live/user/pass/14.ts", "logo": "https://placeholder.com" },
+  { "id": "ch15", "name": "القناة 15", "url": "http://your-server.com:port/live/user/pass/15.ts", "logo": "https://placeholder.com" },
+  { "id": "ch16", "name": "القناة 16", "url": "http://your-server.com:port/live/user/pass/16.ts", "logo": "https://placeholder.com" },
+  { "id": "ch17", "name": "القناة 17", "url": "http://your-server.com:port/live/user/pass/17.ts", "logo": "https://placeholder.com" },
+  { "id": "ch18", "name": "القناة 18", "url": "http://your-server.com:port/live/user/pass/18.ts", "logo": "https://placeholder.com" },
+  { "id": "ch19", "name": "القناة 19", "url": "http://your-server.com:port/live/user/pass/19.ts", "logo": "https://placeholder.com" },
+  { "id": "ch20", "name": "القناة 20", "url": "http://your-server.com:port/live/user/pass/20.ts", "logo": "https://placeholder.com" },
+  { "id": "ch21", "name": "القناة 21", "url": "http://your-server.com:port/live/user/pass/21.ts", "logo": "https://placeholder.com" },
+  { "id": "ch22", "name": "القناة 22", "url": "http://your-server.com:port/live/user/pass/22.ts", "logo": "https://placeholder.com" },
+  { "id": "ch23", "name": "القناة 23", "url": "http://your-server.com:port/live/user/pass/23.ts", "logo": "https://placeholder.com" },
+  { "id": "ch24", "name": "القناة 24", "url": "http://your-server.com:port/live/user/pass/24.ts", "logo": "https://placeholder.com" },
+  { "id": "ch25", "name": "القناة 25", "url": "http://your-server.com:port/live/user/pass/25.ts", "logo": "https://placeholder.com" },
+  { "id": "ch26", "name": "القناة 26", "url": "http://your-server.com:port/live/user/pass/26.ts", "logo": "https://placeholder.com" },
+  { "id": "ch27", "name": "القناة 27", "url": "http://your-server.com:port/live/user/pass/27.ts", "logo": "https://placeholder.com" },
+  { "id": "ch28", "name": "القناة 28", "url": "http://your-server.com:port/live/user/pass/28.ts", "logo": "https://placeholder.com" },
+  { "id": "ch29", "name": "القناة 29", "url": "http://your-server.com:port/live/user/pass/29.ts", "logo": "https://placeholder.com" },
+  { "id": "ch30", "name": "القناة 30", "url": "http://your-server.com:port/live/user/pass/30.ts", "logo": "https://placeholder.com" },
+  { "id": "ch31", "name": "القناة 31", "url": "http://your-server.com:port/live/user/pass/31.ts", "logo": "https://placeholder.com" },
+  { "id": "ch32", "name": "القناة 32", "url": "http://your-server.com:port/live/user/pass/32.ts", "logo": "https://placeholder.com" },
+  { "id": "ch33", "name": "القناة 33", "url": "http://your-server.com:port/live/user/pass/33.ts", "logo": "https://placeholder.com" },
+  { "id": "ch34", "name": "القناة 34", "url": "http://your-server.com:port/live/user/pass/34.ts", "logo": "https://placeholder.com" },
+  { "id": "ch35", "name": "القناة 35", "url": "http://your-server.com:port/live/user/pass/35.ts", "logo": "https://placeholder.com" },
+  { "id": "ch36", "name": "القناة 36", "url": "http://your-server.com:port/live/user/pass/36.ts", "logo": "https://placeholder.com" },
+  { "id": "ch37", "name": "القناة 37", "url": "http://your-server.com:port/live/user/pass/37.ts", "logo": "https://placeholder.com" },
+  { "id": "ch38", "name": "القناة 38", "url": "http://your-server.com:port/live/user/pass/38.ts", "logo": "https://placeholder.com" },
+  { "id": "ch39", "name": "القناة 39", "url": "http://your-server.com:port/live/user/pass/39.ts", "logo": "https://placeholder.com" },
+  { "id": "ch40", "name": "القناة 40", "url": "http://your-server.com:port/live/user/pass/40.ts", "logo": "https://placeholder.com" },
+  { "id": "ch41", "name": "القناة 41", "url": "http://your-server.com:port/live/user/pass/41.ts", "logo": "https://placeholder.com" },
+  { "id": "ch42", "name": "القناة 42", "url": "http://your-server.com:port/live/user/pass/42.ts", "logo": "https://placeholder.com" },
+  { "id": "ch43", "name": "القناة 43", "url": "http://your-server.com:port/live/user/pass/43.ts", "logo": "https://placeholder.com" },
+  { "id": "ch44", "name": "القناة 44", "url": "http://your-server.com:port/live/user/pass/44.ts", "logo": "https://placeholder.com" },
+  { "id": "ch45", "name": "القناة 45", "url": "http://your-server.com:port/live/user/pass/45.ts", "logo": "https://placeholder.com" },
+  { "id": "ch46", "name": "القناة 46", "url": "http://your-server.com:port/live/user/pass/46.ts", "logo": "https://placeholder.com" },
+  { "id": "ch47", "name": "القناة 47", "url": "http://your-server.com:port/live/user/pass/47.ts", "logo": "https://placeholder.com" },
+  { "id": "ch48", "name": "القناة 48", "url": "http://your-server.com:port/live/user/pass/48.ts", "logo": "https://placeholder.com" },
+  { "id": "ch49", "name": "القناة 49", "url": "http://your-server.com:port/live/user/pass/49.ts", "logo": "https://placeholder.com" },
+  { "id": "ch50", "name": "القناة 50", "url": "http://your-server.com:port/live/user/pass/50.ts", "logo": "https://placeholder.com" },
+  { "id": "ch51", "name": "القناة 51", "url": "http://your-server.com:port/live/user/pass/51.ts", "logo": "https://placeholder.com" },
+  { "id": "ch52", "name": "القناة 52", "url": "http://your-server.com:port/live/user/pass/52.ts", "logo": "https://placeholder.com" },
+  { "id": "ch53", "name": "القناة 53", "url": "http://your-server.com:port/live/user/pass/53.ts", "logo": "https://placeholder.com" },
+  { "id": "ch54", "name": "القناة 54", "url": "http://your-server.com:port/live/user/pass/54.ts", "logo": "https://placeholder.com" },
+  { "id": "ch55", "name": "القناة 55", "url": "http://your-server.com:port/live/user/pass/55.ts", "logo": "https://placeholder.com" },
+  { "id": "ch56", "name": "القناة 56", "url": "http://your-server.com:port/live/user/pass/56.ts", "logo": "https://placeholder.com" },
+  { "id": "ch57", "name": "القناة 57", "url": "http://your-server.com:port/live/user/pass/57.ts", "logo": "https://placeholder.com" },
+  { "id": "ch58", "name": "القناة 58", "url": "http://your-server.com:port/live/user/pass/58.ts", "logo": "https://placeholder.com" },
+  { "id": "ch59", "name": "القناة 59", "url": "http://your-server.com:port/live/user/pass/59.ts", "logo": "https://placeholder.com" },
+  { "id": "ch60", "name": "القناة 60", "url": "http://your-server.com:port/live/user/pass/60.ts", "logo": "https://placeholder.com" },
+  { "id": "ch61", "name": "القناة 61", "url": "http://your-server.com:port/live/user/pass/61.ts", "logo": "https://placeholder.com" },
+  { "id": "ch62", "name": "القناة 62", "url": "http://your-server.com:port/live/user/pass/62.ts", "logo": "https://placeholder.com" },
+  { "id": "ch63", "name": "القناة 63", "url": "http://your-server.com:port/live/user/pass/63.ts", "logo": "https://placeholder.com" },
+  { "id": "ch64", "name": "القناة 64", "url": "http://your-server.com:port/live/user/pass/64.ts", "logo": "https://placeholder.com" },
+  { "id": "ch65", "name": "القناة 65", "url": "http://your-server.com:port/live/user/pass/65.ts", "logo": "https://placeholder.com" },
+  { "id": "ch66", "name": "القناة 66", "url": "http://your-server.com:port/live/user/pass/66.ts", "logo": "https://placeholder.com" },
+  { "id": "ch67", "name": "القناة 67", "url": "http://your-server.com:port/live/user/pass/67.ts", "logo": "https://placeholder.com" },
+  { "id": "ch68", "name": "القناة 68", "url": "http://your-server.com:port/live/user/pass/68.ts", "logo": "https://placeholder.com" },
+  { "id": "ch69", "name": "القناة 69", "url": "http://your-server.com:port/live/user/pass/69.ts", "logo": "https://placeholder.com" },
+  { "id": "ch70", "name": "القناة 70", "url": "http://your-server.com:port/live/user/pass/70.ts", "logo": "https://placeholder.com" }
+]
