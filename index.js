@@ -14,8 +14,9 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا - حط روابطك مكان هذني =====
-const CHANNELS = [ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+// ===== قنواتك هنا - رجع روابطك هنا =====
+const CHANNELS = [
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
@@ -180,13 +181,16 @@ app.get('/admin', (req, res) => {
   <div class="card"><h3>🔍 بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود..." oninput="load()" style="margin-bottom:0"></div>
   <div class="card" style="display:flex;gap:10px"><button class="btn btn-export" onclick="load()">تحديث القائمة</button><button class="btn btn-export" style="background:#fff;color:#0f172a;border:1px solid #e2e8f0" onclick="exportCSV()">📥 تصدير اكسل CSV</button></div>
   <div id="list"></div>
+  <div id="debug" class="card" style="display:none;color:#991b1b;font-size:12px;white-space:pre-wrap"></div>
   </div>
   <script>
+  function showErr(t){ const d=document.getElementById('debug'); d.style.display='block'; d.textContent=t; }
   async function load(){
     const pass=document.getElementById('pass').value;
     const q=document.getElementById('search').value||'';
     const r=await fetch('/api/subs?pass='+pass+'&q='+encodeURIComponent(q));
     const data=await r.json();
+    if(data.error){ showErr('خطأ بالقراءة: '+JSON.stringify(data)); return; }
     if(!data.length){document.getElementById('list').innerHTML='<div class="card" style="text-align:center;color:#64748b">لا يوجد مشتركين بعد</div>';return;}
     let h='<table><tr><th>الاسم</th><th>الكود</th><th>انتهاء</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
@@ -198,7 +202,9 @@ app.get('/admin', (req, res) => {
     const pass=document.getElementById('pass').value;
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,expiry:document.getElementById('expiry').value,pass};
     if(!body.name||!body.code) return alert('اكتب الاسم والكود');
-    await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const r=await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(!r.ok || j.error || j.message){ alert('فشل الاضافة: '+JSON.stringify(j)); showErr(JSON.stringify(j,null,2)); return; }
     alert('تمت الاضافة ✅'); document.getElementById('name').value=''; document.getElementById('code').value=''; load();
   }
   async function renew(code,days){
@@ -223,17 +229,21 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/api/subs', async (req, res) => {
-  if (req.query.pass !== ADMIN_PASS) return res.status(401).json([]);
+  if (req.query.pass !== ADMIN_PASS) return res.status(401).json({error:"wrong pass"});
   let url = `${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc&limit=1000`;
   if (req.query.q) url += `&or=(name.ilike.*${encodeURIComponent(req.query.q)}*,code.ilike.*${encodeURIComponent(req.query.q)}*)`;
   const r = await fetch(url, { headers });
-  res.json(await r.json());
+  const j = await r.json();
+  if(!r.ok) return res.status(r.status).json(j);
+  res.json(j);
 });
 
 app.post('/api/subs', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+  if (req.body.pass !== ADMIN_PASS) return res.status(401).json({error:"wrong pass"});
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers`, { method: 'POST', headers, body: JSON.stringify({ name: req.body.name, code: req.body.code, expiry: req.body.expiry || null, active: true }) });
-  res.json(await r.json());
+  const j = await r.json();
+  if(!r.ok) return res.status(r.status).json(j);
+  res.json(j);
 });
 
 app.post('/api/renew', async (req, res) => {
