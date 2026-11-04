@@ -5,7 +5,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://djrljivwmwywammiuixr.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_pHEayYHNNS-sPM4-sepq0A_jvpdgaUi";
-const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+const ADMIN_PASS = process.env.ADMIN_PASS || "jasim1241979@";
 
 const headers = {
   "apikey": SUPABASE_KEY,
