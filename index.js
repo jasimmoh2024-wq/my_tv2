@@ -170,10 +170,10 @@ app.get('/admin', (req, res) => {
   <body><div class="wrap">
   <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><span>● متصل - Supabase</span></div>
   <div class="card"><h3>➕ اضافة مشترك جديد</h3>
-  <label>كلمة سر الادمن</label><input id="pass" type="password" value="admin123">
+  <label>كلمة سر الادمن</label><input id="pass" type="password" value="jasim1241979@">
   <div class="grid">
-  <div><label>اسم المشترك</label><input id="name" placeholder="مثال: علي"></div>
-  <div><label>كود المشترك</label><input id="code" placeholder="مثال: ali2026"></div>
+  <div><label>اسم المشترك</label><input id="name" placeholder="  "></div>
+  <div><label>كود المشترك</label><input id="code" placeholder="  "></div>
   <div class="grid-full"><label>تاريخ الانتهاء</label><input id="expiry" type="date"></div>
   </div>
   <button class="btn btn-add" onclick="addSub()">+ اضافة مشترك</button>
