@@ -17,7 +17,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
@@ -116,24 +116,13 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== اضافة جديدة فقط: كشف المتصفح + مشغل وهمي =====
+// ===== اضافة: كشف المتصفح + مشغل وهمي - مصلح للـ ExoPlayer =====
 function isBrowser(req){
   const ua = (req.headers['user-agent'] || '').toLowerCase();
   const accept = (req.headers['accept'] || '').toLowerCase();
-
-  // 1. مشغلات معروفة - ابدا مو متصفح
   if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('smartiptv') || ua.includes('iptv') || ua.includes('ott') || ua.includes('okhttp') || ua.includes('libvlc') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('enigma') || ua.includes('dreambox') || ua.includes('openpli') || ua.includes('dalvik') || ua.includes('android-tv') || ua.includes('smart-tv') || ua.includes('curl') || ua.includes('wget')) return false;
-
-  // 2. ExoPlayer و TiviMate احيانا يدزون Accept مو html
-  // المتصفح الحقيقي دائما يطلب text/html
-  // المشغل يطلب */* او application/x-mpegurl او شي ثاني
-  if(!accept.includes('text/html')){
-    return false; // مو متصفح، خليه ياخذ القنوات
-  }
-
-  // 3. هسه بس اذا طلب html + هو chrome / safari / firefox يعني متصفح حقيقي
+  if(!accept.includes('text/html')) return false;
   if(ua.includes('chrome') || ua.includes('firefox') || ua.includes('safari') || ua.includes('edg') || ua.includes('opera') || ua.includes('mozilla')) return true;
-
   return false;
 }
 function fakePlayer(res){
@@ -184,7 +173,8 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   if(req.body.pass === ADMIN_PASS){
     const token = Buffer.from(ADMIN_PASS).toString('base64');
-    res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200`);
+    // مصلح: بدون Max-Age - كوكي جلسة، ينمسح من تسد المتصفح ويرجع يقفل
+    res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax`);
     return res.redirect('/admin');
   }
   res.redirect('/login?err=1');
@@ -285,6 +275,11 @@ app.get('/admin', requireAdmin, (req, res) => {
   <div id="debug" class="card" style="display:none;color:#991b1b;font-size:12px;white-space:pre-wrap"></div>
   </div>
   <script>
+  // قفل تلقائي: اذا طلعت من الصفحة او ما تحركت 5 دقايق يقفل
+  let lastMove = Date.now();
+  ['mousemove','keydown','click','touchstart'].forEach(e => document.addEventListener(e, () => { lastMove = Date.now(); }));
+  document.addEventListener('visibilitychange', () => { if(document.hidden) { fetch('/logout').finally(()=>{ location.href='/login'; }); } });
+  setInterval(() => { if(Date.now() - lastMove > 5*60*1000) location.href='/logout'; }, 30000);
   function showErr(t){ const d=document.getElementById('debug'); d.style.display='block'; d.textContent=t; }
   function formatLast(s){
     if(!s) return 'لم يدخل بعد';
