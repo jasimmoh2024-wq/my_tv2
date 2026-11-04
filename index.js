@@ -14,9 +14,8 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا =====
-const CHANNELS = [
- {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+// ===== قنواتك هنا - حط روابطك مكان هذني =====
+const CHANNELS = [ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
@@ -115,14 +114,12 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== فحص المشترك من Supabase =====
 async function getSubscriber(code) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}&select=*`, { headers });
   const data = await r.json();
   return data[0];
 }
 
-// ===== رابط القنوات للمشترك =====
 app.get('/playlist', async (req, res) => {
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
@@ -130,7 +127,6 @@ app.get('/playlist', async (req, res) => {
   if (!sub) return res.status(403).send("Code not found");
   if (!sub.active) return res.status(403).send("Account disabled");
   if (sub.expiry && new Date(sub.expiry) < new Date()) return res.status(403).send("Expired - انتهى اشتراكك");
-
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach(c => {
     m3u += `#EXTINF:-1,${c.name}\n${c.url}\n`;
@@ -139,39 +135,71 @@ app.get('/playlist', async (req, res) => {
   res.send(m3u);
 });
 
-// ===== لوحة الادمن =====
 app.get('/admin', (req, res) => {
   res.send(`
-  <!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
-  <style>body{font-family:sans-serif;background:#111;color:#fff;padding:15px}input,select,button{padding:10px;margin:5px 0;width:100%;border-radius:8px;border:none}button{background:#e11d48;color:#fff;font-weight:bold}table{width:100%;background:#222;border-collapse:collapse;margin-top:15px}td,th{padding:8px;border:1px solid #333;text-align:center;font-size:13px}.card{background:#222;padding:12px;border-radius:10px;margin-bottom:10px}</style></head>
-  <body><h2>📺 لوحة تحكم المشتركين</h2>
-  <div class="card">
-  <input id="pass" type="password" placeholder="كلمة سر الادمن - admin123">
-  <input id="name" placeholder="اسم المشترك">
-  <input id="code" placeholder="كود المشترك">
-  <input id="expiry" type="date">
-  <button onclick="addSub()">+ اضافة مشترك</button>
+  <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
+  <style>
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f1f5f9;color:#0f172a;margin:0;padding:20px}
+  .wrap{max-width:720px;margin:auto}
+  .header{background:#fff;padding:18px 20px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .header h2{margin:0;font-size:19px}
+  .header span{font-size:12px;background:#dcfce7;color:#166534;padding:5px 10px;border-radius:20px}
+  .card{background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
+  .card h3{margin:0 0 12px;font-size:15px}
+  label{font-size:12px;color:#64748b;display:block;margin-bottom:4px}
+  input{padding:8px 10px;margin-bottom:10px;width:100%;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#f8fafc}
+  input:focus{border-color:#2563eb;background:#fff}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid-full{grid-column:1/3}
+  .btn{padding:10px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:14px;width:100%}
+  .btn-add{background:#2563eb;color:#fff}
+  .btn-export{background:#0f172a;color:#fff}
+  .btn-small{width:auto;padding:6px 10px;font-size:12px;border-radius:8px;margin:2px;border:none;cursor:pointer;font-weight:bold}
+  .btn-green{background:#dcfce7;color:#166534}
+  .btn-red{background:#fee2e2;color:#991b1b}
+  .btn-gray{background:#f1f5f9;color:#334155}
+  table{width:100%;background:#fff;border-collapse:collapse;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  th{background:#f8fafc;padding:10px;font-size:12px;color:#64748b}
+  td{padding:10px;border-top:1px solid #f1f5f9;text-align:center;font-size:13px}
+  .badge{padding:4px 8px;border-radius:20px;font-size:11px}
+  .on{background:#dcfce7;color:#166534}.off{background:#fee2e2;color:#991b1b}
+  @media(max-width:600px){.grid{grid-template-columns:1fr}.grid-full{grid-column:1}}
+  </style></head>
+  <body><div class="wrap">
+  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><span>● متصل - Supabase</span></div>
+  <div class="card"><h3>➕ اضافة مشترك جديد</h3>
+  <label>كلمة سر الادمن</label><input id="pass" type="password" value="admin123">
+  <div class="grid">
+  <div><label>اسم المشترك</label><input id="name" placeholder="مثال: علي"></div>
+  <div><label>كود المشترك</label><input id="code" placeholder="مثال: ali2026"></div>
+  <div class="grid-full"><label>تاريخ الانتهاء</label><input id="expiry" type="date"></div>
   </div>
-  <div class="card"><input id="search" placeholder="بحث بالاسم او الكود..." oninput="load()"></div>
-  <button onclick="exportCSV()">📥 تصدير اكسل CSV</button>
+  <button class="btn btn-add" onclick="addSub()">+ اضافة مشترك</button>
+  </div>
+  <div class="card"><h3>🔍 بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود..." oninput="load()" style="margin-bottom:0"></div>
+  <div class="card" style="display:flex;gap:10px"><button class="btn btn-export" onclick="load()">تحديث القائمة</button><button class="btn btn-export" style="background:#fff;color:#0f172a;border:1px solid #e2e8f0" onclick="exportCSV()">📥 تصدير اكسل CSV</button></div>
   <div id="list"></div>
+  </div>
   <script>
   async function load(){
     const pass=document.getElementById('pass').value;
     const q=document.getElementById('search').value||'';
     const r=await fetch('/api/subs?pass='+pass+'&q='+encodeURIComponent(q));
     const data=await r.json();
+    if(!data.length){document.getElementById('list').innerHTML='<div class="card" style="text-align:center;color:#64748b">لا يوجد مشتركين بعد</div>';return;}
     let h='<table><tr><th>الاسم</th><th>الكود</th><th>انتهاء</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
-      h+=\`<tr><td>\${s.name}</td><td>\${s.code}</td><td>\${s.expiry||''}</td><td>\${s.active?'✅ فعال':'⛔ موقوف'}</td><td><button onclick="renew('\${s.code}',30)">+30 يوم</button><button onclick="renew('\${s.code}',90)">+90</button><button onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button onclick="delSub('\${s.code}')">حذف</button></td></tr>\`;
+      h+=\`<tr><td><b>\${s.name}</b></td><td style="direction:ltr">\${s.code}</td><td>\${s.expiry||'-'}</td><td><span class="badge \${s.active?'on':'off'}">\${s.active?'✅ فعال':'⛔ موقوف'}</span></td><td><button class="btn-small btn-green" onclick="renew('\${s.code}',30)">+30</button><button class="btn-small btn-green" onclick="renew('\${s.code}',90)">+90</button><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td></tr>\`;
     });
     document.getElementById('list').innerHTML=h+'</table>';
   }
   async function addSub(){
     const pass=document.getElementById('pass').value;
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,expiry:document.getElementById('expiry').value,pass};
+    if(!body.name||!body.code) return alert('اكتب الاسم والكود');
     await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    alert('تمت الاضافة'); load();
+    alert('تمت الاضافة ✅'); document.getElementById('name').value=''; document.getElementById('code').value=''; load();
   }
   async function renew(code,days){
     const pass=document.getElementById('pass').value;
@@ -190,10 +218,10 @@ app.get('/admin', (req, res) => {
     load();
   }
   function exportCSV(){ const pass=document.getElementById('pass').value; window.open('/api/export?pass='+pass); }
+  load();
   </script></body></html>`);
 });
 
-// ===== API =====
 app.get('/api/subs', async (req, res) => {
   if (req.query.pass !== ADMIN_PASS) return res.status(401).json([]);
   let url = `${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc&limit=1000`;
