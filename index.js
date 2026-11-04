@@ -119,8 +119,21 @@ const CHANNELS = [
 // ===== اضافة جديدة فقط: كشف المتصفح + مشغل وهمي =====
 function isBrowser(req){
   const ua = (req.headers['user-agent'] || '').toLowerCase();
-  if(ua.includes('vlc') || ua.includes('tivimate') || ua.includes('smartiptv') || ua.includes('iptv') || ua.includes('ott') || ua.includes('exoplayer') || ua.includes('okhttp') || ua.includes('libvlc') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('enigma') || ua.includes('dreambox') || ua.includes('openpli') || ua.includes('curl') || ua.includes('wget')) return false;
-  if(ua.includes('mozilla') || ua.includes('chrome') || ua.includes('safari') || ua.includes('edge') || ua.includes('firefox') || ua.includes('opera') || ua.includes('iphone') || ua.includes('android')) return true;
+  const accept = (req.headers['accept'] || '').toLowerCase();
+
+  // 1. مشغلات معروفة - ابدا مو متصفح
+  if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('smartiptv') || ua.includes('iptv') || ua.includes('ott') || ua.includes('okhttp') || ua.includes('libvlc') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('enigma') || ua.includes('dreambox') || ua.includes('openpli') || ua.includes('dalvik') || ua.includes('android-tv') || ua.includes('smart-tv') || ua.includes('curl') || ua.includes('wget')) return false;
+
+  // 2. ExoPlayer و TiviMate احيانا يدزون Accept مو html
+  // المتصفح الحقيقي دائما يطلب text/html
+  // المشغل يطلب */* او application/x-mpegurl او شي ثاني
+  if(!accept.includes('text/html')){
+    return false; // مو متصفح، خليه ياخذ القنوات
+  }
+
+  // 3. هسه بس اذا طلب html + هو chrome / safari / firefox يعني متصفح حقيقي
+  if(ua.includes('chrome') || ua.includes('firefox') || ua.includes('safari') || ua.includes('edg') || ua.includes('opera') || ua.includes('mozilla')) return true;
+
   return false;
 }
 function fakePlayer(res){
