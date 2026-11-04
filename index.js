@@ -15,7 +15,7 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا - رجع روابطك هنا =====
+// ===== قنواتك هنا =====
 const CHANNELS = [
  {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
@@ -116,6 +116,59 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
+function parseCookies(req){
+  const c = {};
+  (req.headers.cookie || '').split(';').forEach(p=>{
+    const i = p.indexOf('=');
+    if(i>-1) c[p.slice(0,i).trim()] = decodeURIComponent(p.slice(i+1).trim());
+  });
+  return c;
+}
+function isAdmin(req){
+  const cookies = parseCookies(req);
+  return cookies.admin_auth === Buffer.from(ADMIN_PASS).toString('base64');
+}
+function requireAdmin(req,res,next){
+  if(isAdmin(req)) return next();
+  return res.redirect('/login');
+}
+
+app.get('/login', (req, res) => {
+  if(isAdmin(req)) return res.redirect('/admin');
+  res.send(`
+  <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>دخول الموزع</title>
+  <style>body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px}
+  .box{background:#fff;width:100%;max-width:360px;padding:28px;border-radius:18px;text-align:center}
+  h2{margin:0 0 6px} p{color:#64748b;font-size:13px;margin:0 0 18px}
+  input{width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:12px;font-size:16px;outline:none;margin-bottom:12px;box-sizing:border-box}
+  button{width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer}
+  .err{color:#dc2626;font-size:13px;margin-top:10px}</style></head>
+  <body><div class="box"><h2>🔐 دخول الموزع</h2><p>اكتب باسورد اللوحة للدخول</p>
+  <form method="POST" action="/login" autocomplete="off">
+    <input type="text" name="fakeuser" style="display:none" tabindex="-1" autocomplete="off">
+    <input type="password" name="pass" placeholder="الباسورد" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" required autofocus>
+    <button>دخول</button>
+  </form>
+  ${req.query.err ? '<div class="err">باسورد غلط، حاول مرة ثانية</div>' : ''}
+  <p style="margin-top:14px;font-size:11px">الباسورد لا ينحفظ في المتصفح</p>
+  </div></body></html>`);
+});
+
+app.post('/login', (req, res) => {
+  if(req.body.pass === ADMIN_PASS){
+    const token = Buffer.from(ADMIN_PASS).toString('base64');
+    res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200`);
+    return res.redirect('/admin');
+  }
+  res.redirect('/login?err=1');
+});
+
+app.get('/logout', (req, res) => {
+  res.setHeader('Set-Cookie', 'admin_auth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  res.redirect('/login');
+});
+
 async function getSubscriber(code) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}&select=*`, { headers });
   const data = await r.json();
@@ -124,63 +177,52 @@ async function getSubscriber(code) {
 
 app.get('/playlist', async (req, res) => {
   const code = req.query.code;
-  // MAC يجي من الرابط: ?code=ali123&mac=AA:BB:CC:DD:EE:FF
-  // او ?code=ali123&device=AA:BB:CC:DD:EE:FF
   let mac = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
   if (!code) return res.status(403).send("No code");
   const sub = await getSubscriber(code);
   if (!sub) return res.status(403).send("Code not found");
   if (!sub.active) return res.status(403).send("Account disabled - الاشتراك موقوف");
   if (sub.expiry && new Date(sub.expiry) < new Date()) return res.status(403).send("Expired - انتهى اشتراكك");
-
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
   const now = new Date().toISOString();
-
-  // ===== تقييد MAC - جهاز واحد فقط =====
   if (sub.mac_address) {
-    // المشترك اله MAC مربوط من قبل
-    if (!mac) return res.status(403).send("يجب اضافة MAC الرسيفر للرابط - تواصل مع الموزع");
-    if (mac !== sub.mac_address.toUpperCase()) {
+    if (mac && mac !== sub.mac_address.toUpperCase()) {
       return res.status(403).send("هذا الاشتراك مربوط برسيفر اخر - MAC غير مطابق");
     }
-    // نفس الجهاز - حدث اخر ظهور
     await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
   } else {
-    // اول مرة - اربط اول MAC يدخل
     if (mac) {
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: mac, device_id: mac, last_seen: now, device_ip: ip }) });
     } else {
-      // اذا ما دز MAC، حدث اخر ظهور فقط وخلي الربط مفتوح لاول MAC
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     }
   }
-
-  let m3u = "#EXTM3U\n";
+  let m3u = "#EXTM3U x-tvg-url=\"\"\n";
   CHANNELS.forEach(c => {
-    m3u += `#EXTINF:-1,${c.name}\n${c.url}\n`;
+    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" tvg-logo="${c.logo||''}" group-title="Live",${c.name}\n${c.url}\n`;
   });
-  res.setHeader('Content-Type', 'application/x-mpegURL');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.send(m3u);
 });
 
-app.get('/admin', (req, res) => {
+app.get('/admin', requireAdmin, (req, res) => {
   res.send(`
   <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
   <style>
   *{box-sizing:border-box}
   body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f1f5f9;color:#0f172a;margin:0;padding:20px}
   .wrap{max-width:1000px;margin:auto}
-  .header{background:#fff;padding:18px 20px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .header{background:#fff;padding:18px 20px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
   .header h2{margin:0;font-size:19px}
   .header span{font-size:12px;background:#dcfce7;color:#166534;padding:5px 10px;border-radius:20px}
+  .logout{background:#fee2e2;color:#991b1b;padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:13px}
   .card{background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
   .card h3{margin:0 0 12px;font-size:15px}
   label{font-size:12px;color:#64748b;display:block;margin-bottom:4px}
   input{padding:8px 10px;margin-bottom:10px;width:100%;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;background:#f8fafc}
   input:focus{border-color:#2563eb;background:#fff}
-  input[type="date"]{padding:6px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .grid-full{grid-column:1/3}
   .btn{padding:10px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:14px;width:100%}
   .btn-add{background:#2563eb;color:#fff}
   .btn-export{background:#0f172a;color:#fff}
@@ -197,23 +239,20 @@ app.get('/admin', (req, res) => {
   .on{background:#dcfce7;color:#166534}.off{background:#fee2e2;color:#991b1b}
   .mac-input{width:130px !important;margin:0 !important;font-size:11px !important;direction:ltr;text-align:center}
   .date-input{width:125px !important;margin:0 !important;font-size:12px !important}
-  .hint{font-size:11px;color:#64748b;margin-top:4px}
-  @media(max-width:700px){.grid{grid-template-columns:1fr}.grid-full{grid-column:1}}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
   </style></head>
   <body><div class="wrap">
-  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><span>● حماية MAC - جهاز واحد</span></div>
+  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● حماية MAC - جهاز واحد</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
   <div class="card"><h3>➕ اضافة مشترك جديد</h3>
-  <label>كلمة سر الادمن</label><input id="pass" type="password" value="jasim1241979@">
   <div class="grid">
-  <div><label>اسم المشترك</label><input id="name" placeholder=" "></div>
-  <div><label>كود المشترك</label><input id="code" placeholder=" "></div>
-  <div><label>MAC الرسيفر (اختياري - اذا تركته فارغ ينربط اول جهاز يفتح)</label><input id="mac" placeholder="مثال: AA:BB:CC:DD:EE:FF" style="direction:ltr"></div>
+  <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
+  <div><label>كود المشترك</label><input id="code" placeholder=" " autocomplete="off"></div>
+  <div><label>MAC الرسيفر (اختياري)</label><input id="mac" placeholder="مثال: AA:BB:CC:DD:EE:FF" style="direction:ltr" autocomplete="off"></div>
   <div><label>تاريخ الانتهاء</label><input id="expiry" type="date"></div>
   </div>
   <button class="btn btn-add" onclick="addSub()">+ اضافة مشترك</button>
-  <div class="hint">الرابط راح يصير: your-server/playlist?code=الكود&mac=MAC-الرسيفر</div>
   </div>
-  <div class="card"><h3>🔍 بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود او MAC..." oninput="load()" style="margin-bottom:0"></div>
+  <div class="card"><h3>🔍 بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود او MAC..." oninput="load()" style="margin-bottom:0" autocomplete="off"></div>
   <div class="card" style="display:flex;gap:10px"><button class="btn btn-export" onclick="load()">تحديث القائمة</button><button class="btn btn-export" style="background:#fff;color:#0f172a;border:1px solid #e2e8f0" onclick="exportCSV()">📥 تصدير اكسل CSV</button></div>
   <div id="list"></div>
   <div id="debug" class="card" style="display:none;color:#991b1b;font-size:12px;white-space:pre-wrap"></div>
@@ -231,9 +270,9 @@ app.get('/admin', (req, res) => {
     return d.toLocaleString('ar-IQ',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   }
   async function load(){
-    const pass=document.getElementById('pass').value;
     const q=document.getElementById('search').value||'';
-    const r=await fetch('/api/subs?pass='+pass+'&q='+encodeURIComponent(q));
+    const r=await fetch('/api/subs?q='+encodeURIComponent(q));
+    if(r.status===401){ location.href='/login'; return; }
     const data=await r.json();
     if(data.error){ showErr('خطأ بالقراءة: '+JSON.stringify(data)); return; }
     if(!data.length){document.getElementById('list').innerHTML='<div class="card" style="text-align:center;color:#64748b">لا يوجد مشتركين بعد</div>';return;}
@@ -241,7 +280,7 @@ app.get('/admin', (req, res) => {
     data.forEach(s=>{
       h+=\`<tr>
         <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}','\${s.mac_address||''}')">📋 نسخ الرابط</button></td>
-        <td><input class="mac-input" id="mac-\${s.code}" value="\${s.mac_address||''}" placeholder="AA:BB:CC..."><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
+        <td><input class="mac-input" id="mac-\${s.code}" value="\${s.mac_address||''}" placeholder="AA:BB:CC..." autocomplete="off"><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
         <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">💾 حفظ التاريخ</button></td>
         <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">🔄 تحديث اخر ظهور</button></td>
         <td><span class="badge \${s.active?'on':'off'}">\${s.active?'✅ فعال':'⛔ موقوف'}</span></td>
@@ -256,8 +295,7 @@ app.get('/admin', (req, res) => {
     alert('تم نسخ الرابط:\\n'+base);
   }
   async function addSub(){
-    const pass=document.getElementById('pass').value;
-    const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value,pass};
+    const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value};
     if(!body.name||!body.code) return alert('اكتب الاسم والكود');
     const r=await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json();
@@ -265,42 +303,36 @@ app.get('/admin', (req, res) => {
     alert('تمت الاضافة ✅'); document.getElementById('name').value=''; document.getElementById('code').value=''; document.getElementById('mac').value=''; load();
   }
   async function saveDate(code){
-    const pass=document.getElementById('pass').value;
     const expiry=document.getElementById('date-'+code).value;
     if(!expiry) return alert('اختار تاريخ');
-    await fetch('/api/update-date',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,expiry,pass})});
+    await fetch('/api/update-date',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,expiry})});
     alert('تم تعديل التاريخ الى '+expiry+' ✅'); load();
   }
   async function saveMac(code){
-    const pass=document.getElementById('pass').value;
     const mac=document.getElementById('mac-'+code).value.toUpperCase();
-    await fetch('/api/update-mac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,mac_address:mac,pass})});
+    await fetch('/api/update-mac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,mac_address:mac})});
     alert('تم حفظ MAC ✅'); load();
   }
   async function toggle(code,active){
-    const pass=document.getElementById('pass').value;
-    await fetch('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,active,pass})});
+    await fetch('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,active})});
     load();
   }
   async function resetDevice(code){
-    if(!confirm('تفك ربط MAC لهذا المشترك؟ راح يگدر يدخل من رسيفر جديد'))return;
-    const pass=document.getElementById('pass').value;
-    await fetch('/api/reset-device',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,pass})});
+    if(!confirm('تفك ربط MAC لهذا المشترك؟'))return;
+    await fetch('/api/reset-device',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
     alert('تم فك الربط ✅'); load();
   }
   async function delSub(code){
     if(!confirm('متأكد حذف؟'))return;
-    const pass=document.getElementById('pass').value;
-    await fetch('/api/subs?pass='+pass+'&code='+code,{method:'DELETE'});
+    await fetch('/api/subs?code='+code,{method:'DELETE'});
     load();
   }
-  function exportCSV(){ const pass=document.getElementById('pass').value; window.open('/api/export?pass='+pass); }
+  function exportCSV(){ window.open('/api/export'); }
   load();
   </script></body></html>`);
 });
 
-app.get('/api/subs', async (req, res) => {
-  if (req.query.pass !== ADMIN_PASS) return res.status(401).json({error:"wrong pass"});
+app.get('/api/subs', requireAdmin, async (req, res) => {
   let url = `${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc&limit=1000`;
   if (req.query.q) url += `&or=(name.ilike.*${encodeURIComponent(req.query.q)}*,code.ilike.*${encodeURIComponent(req.query.q)}*,mac_address.ilike.*${encodeURIComponent(req.query.q)}*)`;
   const r = await fetch(url, { headers });
@@ -309,46 +341,39 @@ app.get('/api/subs', async (req, res) => {
   res.json(j);
 });
 
-app.post('/api/subs', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).json({error:"wrong pass"});
+app.post('/api/subs', requireAdmin, async (req, res) => {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers`, { method: 'POST', headers, body: JSON.stringify({ name: req.body.name, code: req.body.code, mac_address: req.body.mac_address || null, expiry: req.body.expiry || null, active: true }) });
   const j = await r.json();
   if(!r.ok) return res.status(r.status).json(j);
   res.json(j);
 });
 
-app.post('/api/update-date', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.post('/api/update-date', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ expiry: req.body.expiry }) });
   res.json({ ok: true });
 });
 
-app.post('/api/update-mac', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.post('/api/update-mac', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: req.body.mac_address || null }) });
   res.json({ ok: true });
 });
 
-app.post('/api/toggle', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.post('/api/toggle', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ active: req.body.active }) });
   res.json({ ok: true });
 });
 
-app.post('/api/reset-device', async (req, res) => {
-  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.post('/api/reset-device', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: null, device_id: null, device_ip: null, last_seen: null }) });
   res.json({ ok: true });
 });
 
-app.delete('/api/subs', async (req, res) => {
-  if (req.query.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.delete('/api/subs', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.query.code}`, { method: 'DELETE', headers });
   res.json({ ok: true });
 });
 
-app.get('/api/export', async (req, res) => {
-  if (req.query.pass !== ADMIN_PASS) return res.status(401).send("no");
+app.get('/api/export', requireAdmin, async (req, res) => {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc`, { headers });
   const data = await r.json();
   let csv = "name,code,mac_address,active,expiry,last_seen,device_ip\n";
