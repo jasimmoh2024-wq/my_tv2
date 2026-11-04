@@ -116,6 +116,19 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
+// ===== اضافة جديدة فقط: كشف المتصفح + مشغل وهمي =====
+function isBrowser(req){
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  if(ua.includes('vlc') || ua.includes('tivimate') || ua.includes('smartiptv') || ua.includes('iptv') || ua.includes('ott') || ua.includes('exoplayer') || ua.includes('okhttp') || ua.includes('libvlc') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('enigma') || ua.includes('dreambox') || ua.includes('openpli') || ua.includes('curl') || ua.includes('wget')) return false;
+  if(ua.includes('mozilla') || ua.includes('chrome') || ua.includes('safari') || ua.includes('edge') || ua.includes('firefox') || ua.includes('opera') || ua.includes('iphone') || ua.includes('android')) return true;
+  return false;
+}
+function fakePlayer(res){
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.setHeader('Cache-Control','no-store');
+  return res.send(`<!DOCTYPE html><html lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title></title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#000;overflow:hidden}body{display:flex;align-items:center;justify-content:center}video{width:100%;height:100%;background:#000;object-fit:contain}</style></head><body><video autoplay muted playsinline controls></video><script>document.addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey)||(e.ctrlKey&&e.key==='u'))e.preventDefault();});</script></body></html>`);
+}
+
 function parseCookies(req){
   const c = {};
   (req.headers.cookie || '').split(';').forEach(p=>{
@@ -176,6 +189,7 @@ async function getSubscriber(code) {
 }
 
 app.get('/playlist', async (req, res) => {
+  if(isBrowser(req)) return fakePlayer(res);
   const code = req.query.code;
   let mac = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
   if (!code) return res.status(403).send("No code");
@@ -383,7 +397,10 @@ app.get('/api/export', requireAdmin, async (req, res) => {
   res.send(csv);
 });
 
-app.get('/', (req, res) => res.send("TV Server - Supabase OK"));
+app.get('/', (req, res) => {
+  if(isBrowser(req)) return fakePlayer(res);
+  res.send("TV Server - Supabase OK");
+});
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("Running " + PORT));
