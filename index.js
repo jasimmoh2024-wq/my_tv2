@@ -7,8 +7,8 @@ const SHEET_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 
 // مصفوفتك - الصقها كلها هنا
 const CHANNELS = [
-  {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677003.m3u8"},
-  {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677004.m3u8"},
+  {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+  {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677005.m3u8"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677006.m3u8"},
   {"name":"5 - bein sport 5","logo":"https://lo1.in/bein/beinn5.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677007.m3u8"},
