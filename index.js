@@ -1,19 +1,28 @@
 const express = require('express');
-const axios = require('axios');
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const SHEET_ID = '1YdDOSnw2Vjimg_7bik3j9uANjQMnQUWQT2_uvw9mSEU';
-const SHEET_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://djrljivwmwywammiuixr.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_pHEayYHNNS-sPM4-sepq0A_jvpdgaUi";
+const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
 
-// مصفوفتك - الصقها كلها هنا
+const headers = {
+  "apikey": SUPABASE_KEY,
+  "Authorization": `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json",
+  "Prefer": "return=representation"
+};
+
+// ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
-  {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677005.m3u8"},
-  {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677006.m3u8"},
-  {"name":"5 - bein sport 5","logo":"https://lo1.in/bein/beinn5.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677007.m3u8"},
-  {"name":"6 - bein sport 6","logo":"https://lo1.in/bein/beinn6.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677008.m3u8"},
-  {"name":"7 - bein sport 7","logo":"https://lo1.in/bss/BEIN SPORTS 07.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677009.m3u8"},
+  {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
+  {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
+  {"name":"5 - bein sport 5","logo":"https://lo1.in/bein/beinn5.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677007"},
+  {"name":"6 - bein sport 6","logo":"https://lo1.in/bein/beinn6.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677008"},
+  {"name":"7 - bein sport 7","logo":"https://lo1.in/bss/BEIN SPORTS 07.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677009"},
   {"name":"8 - bein sport 8","logo":"https://lo1.in/bss/bss8.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677010.m3u8"},
   {"name":"9 - ALWAN SPORT 1","logo":"https://lo1.in/fwc/ALWANS.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649689.m3u8"},
   {"name":"10 - ALWAN SPORT 2","logo":"https://lo1.in/fwc/ALWANS.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649690.m3u8"},
@@ -106,60 +115,134 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-app.get('/playlist.m3u', async (req, res) => {
-  const userCode = (req.query.code || "").toString().trim();
-  const ua = (req.headers['user-agent'] || "").toLowerCase();
+// ===== فحص المشترك من Supabase =====
+async function getSubscriber(code) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}&select=*`, { headers });
+  const data = await r.json();
+  return data[0];
+}
 
-  // كشف المتصفح
-  const isBrowser = ua.includes('mozilla') || ua.includes('chrome') || ua.includes('safari') || ua.includes('edge') || ua.includes('firefox');
-  const isVLC = ua.includes('vlc') || ua.includes('lavf') || ua.includes('iptv') || ua.includes('ott') || ua.includes('exoplayer') || ua.includes('kodi');
+// ===== رابط القنوات للمشترك =====
+app.get('/playlist', async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(403).send("No code");
+  const sub = await getSubscriber(code);
+  if (!sub) return res.status(403).send("Code not found");
+  if (!sub.active) return res.status(403).send("Account disabled");
+  if (sub.expiry && new Date(sub.expiry) < new Date()) return res.status(403).send("Expired - انتهى اشتراكك");
 
-  // اذا متصفح - اظهر صفحة فيديو وهمية
-  if (isBrowser && !isVLC) {
-    return res.send(`
-      <html dir="rtl" style="background:#000;color:#fff;text-align:center;padding-top:50px;font-family:Arial">
-        <h2>⚠️ هذا الرابط لا يعمل في المتصفح</h2>
-        <p>MY - TV IPTV</p>
-        <video controls autoplay muted style="width:80%;max-width:600px;background:#111;margin-top:20px">
-          <source src="" type="video/mp4">
-        </video>
-        <p style="color:#888;margin-top:20px">الكود: ${userCode || 'غير موجود'}</p>
-        <script>setTimeout(()=>{document.querySelector('video').pause()},1000)</script>
-      </html>
-    `);
-  }
-
-  res.header('Content-Type','text/plain; charset=utf-8');
-  res.header('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.header('Pragma', 'no-cache');
-  res.header('Expires', '0');
-
-  if (!userCode) return res.send('#EXTM3U\n#EXTINF:-1,اكتب الكود');
-
-  try {
-    const { data } = await axios.get(SHEET_URL);
-    const found = data.find(c => String(c.code).trim() == userCode);
-    if (!found) return res.send('#EXTM3U\n#EXTINF:-1,الكود غير موجود');
-    if (String(found.active).toUpperCase() !== 'TRUE') {
-      return res.send(`#EXTM3U\n#EXTINF:-1,${found.name || ''} حسابك موقوف`);
-    }
-    if (found.expiry) {
-      const today = new Date(); today.setHours(0,0,0,0);
-      const exp = new Date(found.expiry); exp.setHours(0,0,0,0);
-      if (today > exp) return res.send(`#EXTM3U\n#EXTINF:-1,${found.name || ''} انتهى اشتراكك ${found.expiry}`);
-    }
-
-    let m3u = '#EXTM3U\n';
-    CHANNELS.forEach(ch => {
-      m3u += `#EXTINF:-1 tvg-logo="${ch.logo}" ,${ch.name}\n${ch.url}\n`;
-    });
-    res.send(m3u);
-
-  } catch (e) {
-    console.error(e.message);
-    res.send('#EXTM3U\n#EXTINF:-1,خطأ مؤقت');
-  }
+  let m3u = "#EXTM3U\n";
+  CHANNELS.forEach(c => {
+    m3u += `#EXTINF:-1,${c.name}\n${c.url}\n`;
+  });
+  res.setHeader('Content-Type', 'application/x-mpegURL');
+  res.send(m3u);
 });
 
+// ===== لوحة الادمن =====
+app.get('/admin', (req, res) => {
+  res.send(`
+  <!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
+  <style>body{font-family:sans-serif;background:#111;color:#fff;padding:15px}input,select,button{padding:10px;margin:5px 0;width:100%;border-radius:8px;border:none}button{background:#e11d48;color:#fff;font-weight:bold}table{width:100%;background:#222;border-collapse:collapse;margin-top:15px}td,th{padding:8px;border:1px solid #333;text-align:center;font-size:13px}.card{background:#222;padding:12px;border-radius:10px;margin-bottom:10px}</style></head>
+  <body><h2>📺 لوحة تحكم المشتركين</h2>
+  <div class="card">
+  <input id="pass" type="password" placeholder="كلمة سر الادمن - admin123">
+  <input id="name" placeholder="اسم المشترك">
+  <input id="code" placeholder="كود المشترك">
+  <input id="expiry" type="date">
+  <button onclick="addSub()">+ اضافة مشترك</button>
+  </div>
+  <div class="card"><input id="search" placeholder="بحث بالاسم او الكود..." oninput="load()"></div>
+  <button onclick="exportCSV()">📥 تصدير اكسل CSV</button>
+  <div id="list"></div>
+  <script>
+  async function load(){
+    const pass=document.getElementById('pass').value;
+    const q=document.getElementById('search').value||'';
+    const r=await fetch('/api/subs?pass='+pass+'&q='+encodeURIComponent(q));
+    const data=await r.json();
+    let h='<table><tr><th>الاسم</th><th>الكود</th><th>انتهاء</th><th>حالة</th><th>اجراء</th></tr>';
+    data.forEach(s=>{
+      h+=\`<tr><td>\${s.name}</td><td>\${s.code}</td><td>\${s.expiry||''}</td><td>\${s.active?'✅ فعال':'⛔ موقوف'}</td><td><button onclick="renew('\${s.code}',30)">+30 يوم</button><button onclick="renew('\${s.code}',90)">+90</button><button onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button onclick="delSub('\${s.code}')">حذف</button></td></tr>\`;
+    });
+    document.getElementById('list').innerHTML=h+'</table>';
+  }
+  async function addSub(){
+    const pass=document.getElementById('pass').value;
+    const body={name:document.getElementById('name').value,code:document.getElementById('code').value,expiry:document.getElementById('expiry').value,pass};
+    await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    alert('تمت الاضافة'); load();
+  }
+  async function renew(code,days){
+    const pass=document.getElementById('pass').value;
+    await fetch('/api/renew',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,days,pass})});
+    load();
+  }
+  async function toggle(code,active){
+    const pass=document.getElementById('pass').value;
+    await fetch('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,active,pass})});
+    load();
+  }
+  async function delSub(code){
+    if(!confirm('متأكد حذف؟'))return;
+    const pass=document.getElementById('pass').value;
+    await fetch('/api/subs?pass='+pass+'&code='+code,{method:'DELETE'});
+    load();
+  }
+  function exportCSV(){ const pass=document.getElementById('pass').value; window.open('/api/export?pass='+pass); }
+  </script></body></html>`);
+});
+
+// ===== API =====
+app.get('/api/subs', async (req, res) => {
+  if (req.query.pass !== ADMIN_PASS) return res.status(401).json([]);
+  let url = `${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc&limit=1000`;
+  if (req.query.q) url += `&or=(name.ilike.*${encodeURIComponent(req.query.q)}*,code.ilike.*${encodeURIComponent(req.query.q)}*)`;
+  const r = await fetch(url, { headers });
+  res.json(await r.json());
+});
+
+app.post('/api/subs', async (req, res) => {
+  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers`, { method: 'POST', headers, body: JSON.stringify({ name: req.body.name, code: req.body.code, expiry: req.body.expiry || null, active: true }) });
+  res.json(await r.json());
+});
+
+app.post('/api/renew', async (req, res) => {
+  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+  const sub = await getSubscriber(req.body.code);
+  if (!sub) return res.status(404).send("not found");
+  let base = sub.expiry && new Date(sub.expiry) > new Date() ? new Date(sub.expiry) : new Date();
+  base.setDate(base.getDate() + parseInt(req.body.days));
+  const expiry = base.toISOString().split('T')[0];
+  await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ expiry, active: true }) });
+  res.json({ ok: true, expiry });
+});
+
+app.post('/api/toggle', async (req, res) => {
+  if (req.body.pass !== ADMIN_PASS) return res.status(401).send("no");
+  await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ active: req.body.active }) });
+  res.json({ ok: true });
+});
+
+app.delete('/api/subs', async (req, res) => {
+  if (req.query.pass !== ADMIN_PASS) return res.status(401).send("no");
+  await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.query.code}`, { method: 'DELETE', headers });
+  res.json({ ok: true });
+});
+
+app.get('/api/export', async (req, res) => {
+  if (req.query.pass !== ADMIN_PASS) return res.status(401).send("no");
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc`, { headers });
+  const data = await r.json();
+  let csv = "name,code,active,expiry\n";
+  data.forEach(s => csv += `"${s.name}","${s.code}",${s.active},${s.expiry}\n`);
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename=subscribers.csv');
+  res.send(csv);
+});
+
+app.get('/', (req, res) => res.send("TV Server - Supabase OK"));
+
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log('Running'));
+app.listen(PORT, () => console.log("Running " + PORT));
