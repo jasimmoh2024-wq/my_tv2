@@ -116,16 +116,15 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== كشف المتصفح - يشتغل على VLC و ExoPlayer =====
+// ===== كشف المتصفح - مع استثناء المشغل =====
 function isBrowser(req){
+  // اذا الرابط بيه player=1 يعني انت ناسخه من اللوحة للمشغل، ابدا مو متصفح
+  if(req.query.player === '1' || req.query.player === 'true') return false;
   const fetchMode = (req.headers['sec-fetch-mode'] || '').toLowerCase();
   const fetchDest = (req.headers['sec-fetch-dest'] || '').toLowerCase();
   const ua = (req.headers['user-agent'] || '').toLowerCase();
-  // مشغلات معروفة ابدا مو متصفح
   if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('okhttp') || ua.includes('dalvik') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('libvlc')) return false;
-  // بس المتصفح الحقيقي يدز navigate + document
   if(fetchMode === 'navigate' && fetchDest === 'document') return true;
-  // الباقي كله مشغل
   return false;
 }
 function fakePlayer(res){
@@ -180,7 +179,6 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   if(req.body.pass === ADMIN_PASS){
     const token = Buffer.from(ADMIN_PASS).toString('base64');
-    // اذا اختار حفظ: 30 يوم، اذا ما اختار: جلسة فقط تنمسح من تسد المتصفح
     if(req.body.remember === 'on'){
       res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30*24*60*60}`);
     } else {
@@ -318,9 +316,9 @@ app.get('/admin', requireAdmin, (req, res) => {
     document.getElementById('list').innerHTML=h+'</table>';
   }
   function copyLink(code,mac){
-    const base=location.origin+'/playlist?code='+code+(mac?('&mac='+mac):'');
+    const base=location.origin+'/playlist?code='+code+(mac?('&mac='+mac):'')+'&player=1';
     navigator.clipboard.writeText(base);
-    alert('تم نسخ الرابط:\\n'+base);
+    alert('تم نسخ الرابط للمشغل:\\n'+base+'\\n\\nهذا الرابط يشتغل على VLC و ExoPlayer فقط، واذا فتح بالمتصفح يطلع مشغل وهمي');
   }
   async function addSub(){
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value};
