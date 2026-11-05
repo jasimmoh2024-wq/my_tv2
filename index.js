@@ -17,7 +17,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
- {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4012"},
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
@@ -116,9 +116,8 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== كشف المتصفح - مع استثناء المشغل =====
+// ===== كشف المتصفح =====
 function isBrowser(req){
-  // اذا الرابط بيه player=1 يعني انت ناسخه من اللوحة للمشغل، ابدا مو متصفح
   if(req.query.player === '1' || req.query.player === 'true') return false;
   const fetchMode = (req.headers['sec-fetch-mode'] || '').toLowerCase();
   const fetchDest = (req.headers['sec-fetch-dest'] || '').toLowerCase();
@@ -200,7 +199,7 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-app.get('/playlist', async (req, res) => {
+async function sendPlaylist(req, res){
   if(isBrowser(req)) return fakePlayer(res);
   const code = req.query.code;
   let mac = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
@@ -228,9 +227,16 @@ app.get('/playlist', async (req, res) => {
     m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" tvg-logo="${c.logo||''}" group-title="Live",${c.name}\n${c.url}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  // مهم لـ ExoPlayer: نوع الملف الصحيح
+  res.setHeader('Content-Type', 'application/x-mpegURL; charset=utf-8');
+  res.setHeader('Content-Disposition', 'inline; filename="playlist.m3u8"');
   res.send(m3u);
-});
+}
+
+// VLC يقبل الاثنين، ExoPlayer يحتاج .m3u8
+app.get('/playlist', sendPlaylist);
+app.get('/playlist.m3u8', sendPlaylist);
+app.get('/playlist.m3u', sendPlaylist);
 
 app.get('/admin', requireAdmin, (req, res) => {
   res.send(`
@@ -305,7 +311,7 @@ app.get('/admin', requireAdmin, (req, res) => {
     let h='<table><tr><th>الاسم / الكود</th><th>MAC الرسيفر</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
       h+=\`<tr>
-        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}','\${s.mac_address||''}')">📋 نسخ الرابط</button></td>
+        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}','\${s.mac_address||''}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}','\${s.mac_address||''}')">▶️ نسخ رابط ExoPlayer</button></td>
         <td><input class="mac-input" id="mac-\${s.code}" value="\${s.mac_address||''}" placeholder="AA:BB:CC..." autocomplete="off"><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
         <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">💾 حفظ التاريخ</button></td>
         <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">🔄 تحديث اخر ظهور</button></td>
@@ -318,7 +324,12 @@ app.get('/admin', requireAdmin, (req, res) => {
   function copyLink(code,mac){
     const base=location.origin+'/playlist?code='+code+(mac?('&mac='+mac):'')+'&player=1';
     navigator.clipboard.writeText(base);
-    alert('تم نسخ الرابط للمشغل:\\n'+base+'\\n\\nهذا الرابط يشتغل على VLC و ExoPlayer فقط، واذا فتح بالمتصفح يطلع مشغل وهمي');
+    alert('تم نسخ رابط VLC:\\n'+base);
+  }
+  function copyExo(code,mac){
+    const base=location.origin+'/playlist.m3u8?code='+code+(mac?('&mac='+mac):'')+'&player=1';
+    navigator.clipboard.writeText(base);
+    alert('تم نسخ رابط ExoPlayer:\\n'+base+'\\n\\nالصقه في ExoPlayer، راح تطلع القنوات');
   }
   async function addSub(){
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value};
