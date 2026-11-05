@@ -15,22 +15,105 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا =====
+// ===== قنواتك هنا - بس اسم + رابط، بدون شعار =====
 const CHANNELS = [
-  {name:"1 - bein sport 1", logo:"https://lo1.in/bss/bsS1.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677075.m3u8"},
-  {name:"2 - bein sport 2", logo:"https://lo1.in/bss/bsS2.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677076.m3u8"},
-  {name:"3 - bein sport 3", logo:"https://lo1.in/bss/bs3.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677077.m3u8"},
-  {name:"4 - bein sport 4", logo:"https://lo1.in/bss/bs4.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677078.m3u8"},
-  {name:"5 - bein sport 5", logo:"https://lo1.in/bein/beinn5.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677079.m3u8"},
-  {name:"6 - bein sport 6", logo:"https://lo1.in/bein/beinn6.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677080.m3u8"},
-  {name:"7 - bein sport 7", logo:"https://lo1.in/bss/BEIN SPORTS 07.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677081.m3u8"},
-  {name:"8 - bein sport 8", logo:"https://lo1.in/bss/bss8.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/677082.m3u8"},
-  {name:"9 - ALWAN SPORT 1", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649708.m3u8"},
-  {name:"10 - ALWAN SPORT 2", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649709.m3u8"},
-  {name:"11 - ALWAN SPORT 3", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649710.m3u8"},
-  {name:"12 - ALWAN SPORT 4", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649711.m3u8"},
-  {name:"13 - ALWAN SPORT 5", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649712.m3u8"},
-  {name:"14 - ALWAN SPORT 6", logo:"https://lo1.in/fwc/ALWANS.png", url:"http://tyqw.site:2052/live/10675785266958/99039021857485/649713.m3u8"},
+ {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4012.m3u8"},
+  {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4013.m3u8"},
+  {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4014.m3u8"},
+  {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4015.m3u8"},
+  {"name":"5 - bein sport 5","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4016.m3u8"},
+  {"name":"6 - bein sport 6","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4017.m3u8"},
+  {"name":"7 - bein sport 7","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4018.m3u8"},
+  {"name":"8 - bein sport 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4019.m3u8"},
+  {"name":"9 - ALWAN SPORT 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649689.m3u8"},
+  {"name":"10 - ALWAN SPORT 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649690.m3u8"},
+  {"name":"11 - ALWAN SPORT 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649691.m3u8"},
+  {"name":"12 - ALWAN SPORT 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649692.m3u8"},
+  {"name":"13 - ALWAN SPORT 5","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649693.m3u8"},
+  {"name":"14 - ALWAN SPORT 6","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649694.m3u8"},
+  {"name":"15 - ALWAN SPORT 7","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649695.m3u8"},
+  {"name":"16 - ALWAN SPORT 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649696.m3u8"},
+  {"name":"17 - STARZPLAY SPORTS 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67376.m3u8"},
+  {"name":"18 - STARZPLAY SPORTS 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67378.m3u8"},
+  {"name":"19 - Thamanya Sport 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/646086.m3u8"},
+  {"name":"20 - Thamanya Sport 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/646087.m3u8"},
+  {"name":"21 - Alwan Aflam 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649714.m3u8"},
+  {"name":"22 - Alwan Aflam 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649715.m3u8"},
+  {"name":"23 - Alwan Aflam 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649716.m3u8"},
+  {"name":"24 - Alwan Aflam 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649717.m3u8"},
+  {"name":"25 - ALWAN TURKEY","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649718.m3u8"},
+  {"name":"26 - Alwan Documentary","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649719.m3u8"},
+  {"name":"27 - ALWAN ATFAL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649720.m3u8"},
+  {"name":"28 - ALWAN MOSALSALAT","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649721.m3u8"},
+  {"name":"29 - ALWAN MOSALSALAT +","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649725.m3u8"},
+  {"name":"30 - ALWAN ANIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649726.m3u8"},
+  {"name":"31 - BEIN MOVIES 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/427.m3u8"},
+  {"name":"32 - BEIN MOVIES 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/428.m3u8"},
+  {"name":"33 - BEIN MOVIES 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/429.m3u8"},
+  {"name":"34 - BEIN MOVIES 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/430.m3u8"},
+  {"name":"35 - BEIN SERIES 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/431.m3u8"},
+  {"name":"36 - BEIN SERIES 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/432.m3u8"},
+  {"name":"37 - BEIN DRAMA","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/433.m3u8"},
+  {"name":"38 - vivo OSCAR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192835.m3u8"},
+  {"name":"39 - vivo CLUB","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192834.m3u8"},
+  {"name":"40 - vivo CINEMA 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192833.m3u8"},
+  {"name":"41 - vivo CINEMA 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192832.m3u8"},
+  {"name":"42 - vivo SHOWTIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192836.m3u8"},
+  {"name":"43 - vivo PLUS","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192837.m3u8"},
+  {"name":"44 - vivo SHOWTIME 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192836.m3u8"},
+  {"name":"45 - vivo MOVIES","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192838.m3u8"},
+  {"name":"46 - vivo SENTRAL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192839.m3u8"},
+  {"name":"47 - vivo WAR TIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192840.m3u8"},
+  {"name":"48 - signal Comedy","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192634.m3u8"},
+  {"name":"49 - signal ACTION","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192633.m3u8"},
+  {"name":"50 - signal Cinema","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192635.m3u8"},
+  {"name":"51 - signal AFLAM","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192636.m3u8"},
+  {"name":"52 - signal CLASSIC","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192637.m3u8"},
+  {"name":"53 - signal 90s AR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192638.m3u8"},
+  {"name":"54 - signal VOX","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192639.m3u8"},
+  {"name":"55 - signal GOLD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192640.m3u8"},
+  {"name":"56 - signal ANIME AR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192642.m3u8"},
+  {"name":"57 - SHAHID ACTION 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192749.m3u8"},
+  {"name":"58 - SHAHID ANIME 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192746.m3u8"},
+  {"name":"59 - SHAHID ANIME 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192745.m3u8"},
+  {"name":"60 - SHAHID Comedy","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192739.m3u8"},
+  {"name":"61 - SHAHID ACTION 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192739.m3u8"},
+  {"name":"62 - SHAHID MARVEL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192740.m3u8"},
+  {"name":"63 - SHAHID ASIAN","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192742.m3u8"},
+  {"name":"64 - SHAHID BOLLYWOOD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192743.m3u8"},
+  {"name":"65 - ACTION MOVIES","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1396793.m3u8"},
+  {"name":"66 - SHAHID FILMS 1","url":"https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8"},
+  {"name":"67 - SHAHID FILMS 2","url":"https://shd-amg-fast.edgenextcdn.net/tx007/playlist.m3u8"},
+  {"name":"68 - SHAHID 1","url":"https://shd-amg-fast.edgenextcdn.net/tx017/playlist.m3u8"},
+  {"name":"69 - SHAHID 2","url":"https://shd-amg-fast.edgenextcdn.net/tx015/playlist.m3u8"},
+  {"name":"70 - SHAHID 3","url":"https://shd-amg-fast.edgenextcdn.net/tx014/playlist.m3u8"},
+  {"name":"71 - SHAHID 4","url":"https://shd-amg-fast.edgenextcdn.net/tx010/playlist.m3u8"},
+  {"name":"72 - SHAHID 5","url":"https://shd-amg-fast.edgenextcdn.net/tx013/playlist.m3u8"},
+  {"name":"73 - SHAHID 6","url":"https://shd-amg-fast.edgenextcdn.net/tx003/playlist.m3u8"},
+  {"name":"74 - SHAHID 7","url":"https://shd-amg-fast.edgenextcdn.net/tx005/playlist.m3u8"},
+  {"name":"75 - SHAHID 8","url":"https://shd-amg-fast.edgenextcdn.net/tx008/playlist.m3u8"},
+  {"name":"76 - SHAHID 9","url":"https://shd-amg-fast.edgenextcdn.net/tx009/playlist.m3u8"},
+  {"name":"77 - THRILLER Movies","url":"https://shd-amg-fast.edgenextcdn.net/tx011/playlist.m3u8"},
+  {"name":"78 - WILD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625061.m3u8"},
+  {"name":"79 - travelXP","url":"http://stream.mcquack.net/451/index.m3u8"},
+  {"name":"80 - trave","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625063.m3u8"},
+  {"name":"81 - Asharq Documentary 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625069.m3u8"},
+  {"name":"82 - Animal Planet","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625075.m3u8"},
+  {"name":"83 - H HISORY","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625076.m3u8"},
+  {"name":"84 - Discovery","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625080.m3u8"},
+  {"name":"85 - Asharq Documentary 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625067.m3u8"},
+  {"name":"86 - Al Jazeera Documents","url":"https://live-hls-apps-ajd-fa.getaj.net/AJD/index.m3u8"},
+  {"name":"87 - Kids Music 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193350.m3u8"},
+  {"name":"88 - Kids Music 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193347.m3u8"},
+  {"name":"89 - Kids Music 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193346.m3u8"},
+  {"name":"90 - Kids Music 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193348.m3u8"},
+  {"name":"91 - TOM And jerry 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193324.m3u8"},
+  {"name":"92 - TOM And jerry 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193323.m3u8"},
+  {"name":"93 - TOM And jerry 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193321.m3u8"},
+  {"name":"94 - Nickelodeon 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151195.m3u8"},
+  {"name":"95 - Nickelodeon 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151192.m3u8"},
+  {"name":"96 - pink panther 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193316.m3u8"},
+  {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
 // ===== كشف المتصفح =====
@@ -139,18 +222,16 @@ async function sendPlaylist(req, res){
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     }
   }
-  let m3u = "#EXTM3U x-tvg-url=\"\"\n";
+  let m3u = "#EXTM3U\n";
   CHANNELS.forEach(c => {
-    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" tvg-logo="${c.logo||''}" group-title="Live",${c.name}\n${c.url}\n`;
+    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${c.url}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
-  // مهم لـ ExoPlayer: نوع الملف الصحيح
   res.setHeader('Content-Type', 'application/x-mpegURL; charset=utf-8');
   res.setHeader('Content-Disposition', 'inline; filename="playlist.m3u8"');
   res.send(m3u);
 }
 
-// VLC يقبل الاثنين، ExoPlayer يحتاج .m3u8
 app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
