@@ -38,6 +38,10 @@ const CHANNELS = [
   {"name":"18 - STARZPLAY SPORTS 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67378.m3u8"},
   {"name":"19 - Thamanya Sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226184.m3u8"},
   {"name":"20 - Thamanya Sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226183.m3u8"},
+  {"name":"21 - Alwan Aflam 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276560.m3u8"},
+  {"name":"22 - Alwan Aflam 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276559.m3u8"},
+  {"name":"23 - Alwan Aflam 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276558.m3u8"},
+  {"name":"24 - Alwan Aflam 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276557.m3u8"},
 ];
 
 function isBrowser(req){
