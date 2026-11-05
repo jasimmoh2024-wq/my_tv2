@@ -17,7 +17,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
- {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4012.m3u8"},
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4012"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
