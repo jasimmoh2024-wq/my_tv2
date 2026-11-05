@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,9 +23,9 @@ const CHANNELS = [
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4014.m3u8"},
   {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4015.m3u8"},
   {"name":"5 - bein sport 5","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4016.m3u8"},
-  {"name":"6 - bein sport 6","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4017.m3u8"},
-  {"name":"7 - bein sport 7","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4018.m3u8"},
-  {"name":"8 - bein sport 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4019.m3u8"},
+  {"name":"6 - bein sport 6","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4018.m3u8"},
+  {"name":"7 - bein sport 7","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4019.m3u8"},
+  {"name":"8 - bein sport 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4020.m3u8"},
   {"name":"9 - ALWAN SPORT 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649689.m3u8"},
   {"name":"10 - ALWAN SPORT 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649690.m3u8"},
   {"name":"11 - ALWAN SPORT 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649691.m3u8"},
@@ -116,7 +117,6 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== كشف المتصفح =====
 function isBrowser(req){
   if(req.query.player === '1' || req.query.player === 'true') return false;
   const fetchMode = (req.headers['sec-fetch-mode'] || '').toLowerCase();
@@ -202,26 +202,42 @@ async function getSubscriber(code) {
 async function sendPlaylist(req, res){
   if(isBrowser(req)) return fakePlayer(res);
   const code = req.query.code;
-  let mac = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
   if (!code) return res.status(403).send("No code");
   const sub = await getSubscriber(code);
   if (!sub) return res.status(403).send("Code not found");
   if (!sub.active) return res.status(403).send("Account disabled - الاشتراك موقوف");
   if (sub.expiry && new Date(sub.expiry) < new Date()) return res.status(403).send("Expired - انتهى اشتراكك");
+
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
+  const ua = (req.headers['user-agent'] || '').toString();
+  const macParam = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
-  if (sub.mac_address) {
-    if (mac && mac !== sub.mac_address.toUpperCase()) {
-      return res.status(403).send("هذا الاشتراك مربوط برسيفر اخر - MAC غير مطابق");
+
+  // ===== حماية ضد مشاركة الرابط - بصمة الجهاز =====
+  // البصمة = IP + نوع المشغل + الماك اذا موجود
+  // اذا المشترك شير الرابط، الجهاز الثاني راح تكون بصمته مختلفة، فينحظر
+  const fingerprint = crypto.createHash('md5').update(ip + '|' + ua + '|' + macParam).digest('hex');
+  const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
+  const diffMin = (Date.now() - lastSeen) / 60000;
+
+  if(sub.device_id){
+    // اذا الجهاز محجوز و البصمة مختلفة و الجهاز الاول بعده فعال (اخر 10 دقايق)
+    // يعني جهاز ثاني يحاول يشغل بنفس الوقت - نحظره
+    if(sub.device_id !== fingerprint && diffMin < 10){
+      return res.status(403).send("هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر 10 دقائق");
     }
-    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
-  } else {
-    if (mac) {
-      await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: mac, device_id: mac, last_seen: now, device_ip: ip }) });
+    // اذا البصمة مختلفة و مرت 10 دقايق - نسمحله و ننقل الحجز للجهاز الجديد
+    if(sub.device_id !== fingerprint && diffMin >= 10){
+      await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: macParam || sub.mac_address, device_ip: ip, last_seen: now }) });
     } else {
+      // نفس الجهاز - تحديث اخر ظهور فقط
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     }
+  } else {
+    // اول جهاز يشغل - نحجز البصمة عليه
+    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: macParam || null, device_ip: ip, last_seen: now }) });
   }
+
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach(c => {
     m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${c.url}\n`;
@@ -272,12 +288,12 @@ app.get('/admin', requireAdmin, (req, res) => {
   @media(max-width:700px){.grid{grid-template-columns:1fr}}
   </style></head>
   <body><div class="wrap">
-  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● حماية MAC - جهاز واحد</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
+  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● حماية جهاز واحد - ضد مشاركة الرابط</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
   <div class="card"><h3>➕ اضافة مشترك جديد</h3>
   <div class="grid">
   <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
   <div><label>كود المشترك</label><input id="code" placeholder=" " autocomplete="off"></div>
-  <div><label>MAC الرسيفر (اختياري)</label><input id="mac" placeholder="مثال: AA:BB:CC:DD:EE:FF" style="direction:ltr" autocomplete="off"></div>
+  <div><label>MAC الرسيفر (اختياري - اتركه فارغ)</label><input id="mac" placeholder="اتركه فارغ، السيرفر راح يبصم الجهاز اوتوماتيك" style="direction:ltr" autocomplete="off"></div>
   <div><label>تاريخ الانتهاء</label><input id="expiry" type="date"></div>
   </div>
   <button class="btn btn-add" onclick="addSub()">+ اضافة مشترك</button>
@@ -306,28 +322,28 @@ app.get('/admin', requireAdmin, (req, res) => {
     const data=await r.json();
     if(data.error){ showErr('خطأ بالقراءة: '+JSON.stringify(data)); return; }
     if(!data.length){document.getElementById('list').innerHTML='<div class="card" style="text-align:center;color:#64748b">لا يوجد مشتركين بعد</div>';return;}
-    let h='<table><tr><th>الاسم / الكود</th><th>MAC الرسيفر</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
+    let h='<table><tr><th>الاسم / الكود</th><th>بصمة الجهاز</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
       h+=\`<tr>
-        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}','\${s.mac_address||''}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}','\${s.mac_address||''}')">▶️ نسخ رابط ExoPlayer</button></td>
-        <td><input class="mac-input" id="mac-\${s.code}" value="\${s.mac_address||''}" placeholder="AA:BB:CC..." autocomplete="off"><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
+        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">▶️ نسخ رابط ExoPlayer</button></td>
+        <td><span style="font-size:10px;direction:ltr">\${s.device_id ? s.device_id.slice(0,8)+'...' : 'لم يرتبط بعد'}</span><br><span style="color:#64748b;font-size:10px">MAC: \${s.mac_address||'-'}</span><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
         <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">💾 حفظ التاريخ</button></td>
         <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">🔄 تحديث اخر ظهور</button></td>
         <td><span class="badge \${s.active?'on':'off'}">\${s.active?'✅ فعال':'⛔ موقوف'}</span></td>
-        <td><button class="btn-small btn-orange" onclick="resetDevice('\${s.code}')">🔓 فك ربط MAC</button><br><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td>
+        <td><button class="btn-small btn-orange" onclick="resetDevice('\${s.code}')">🔓 فك ربط الجهاز</button><br><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td>
       </tr>\`;
     });
     document.getElementById('list').innerHTML=h+'</table>';
   }
-  function copyLink(code,mac){
-    const base=location.origin+'/playlist?code='+code+(mac?('&mac='+mac):'')+'&player=1';
+  function copyLink(code){
+    const base=location.origin+'/playlist?code='+code+'&player=1';
     navigator.clipboard.writeText(base);
-    alert('تم نسخ رابط VLC:\\n'+base);
+    alert('تم نسخ رابط VLC:\\n'+base+'\\n\\nملاحظة: الرابط بدون MAC، السيرفر راح يبصم اول جهاز يشغله ويمنع الثاني');
   }
-  function copyExo(code,mac){
-    const base=location.origin+'/playlist.m3u8?code='+code+(mac?('&mac='+mac):'')+'&player=1';
+  function copyExo(code){
+    const base=location.origin+'/playlist.m3u8?code='+code+'&player=1';
     navigator.clipboard.writeText(base);
-    alert('تم نسخ رابط ExoPlayer:\\n'+base+'\\n\\nالصقه في ExoPlayer، راح تطلع القنوات');
+    alert('تم نسخ رابط ExoPlayer:\\n'+base);
   }
   async function addSub(){
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value};
@@ -344,8 +360,9 @@ app.get('/admin', requireAdmin, (req, res) => {
     alert('تم تعديل التاريخ الى '+expiry+' ✅'); load();
   }
   async function saveMac(code){
-    const mac=document.getElementById('mac-'+code).value.toUpperCase();
-    await fetch('/api/update-mac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,mac_address:mac})});
+    const mac=prompt('اكتب MAC الجديد (اختياري)');
+    if(mac===null) return;
+    await fetch('/api/update-mac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,mac_address:mac.toUpperCase()})});
     alert('تم حفظ MAC ✅'); load();
   }
   async function toggle(code,active){
@@ -353,9 +370,9 @@ app.get('/admin', requireAdmin, (req, res) => {
     load();
   }
   async function resetDevice(code){
-    if(!confirm('تفك ربط MAC لهذا المشترك؟'))return;
+    if(!confirm('تفك ربط الجهاز لهذا المشترك؟ راح يسمح لجهاز جديد يشغل'))return;
     await fetch('/api/reset-device',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
-    alert('تم فك الربط ✅'); load();
+    alert('تم فك الربط ✅ الجهاز الجديد راح ينحجز من اول تشغيل'); load();
   }
   async function delSub(code){
     if(!confirm('متأكد حذف؟'))return;
