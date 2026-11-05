@@ -117,21 +117,6 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-function isBrowser(req){
-  if(req.query.player === '1' || req.query.player === 'true') return false;
-  const fetchMode = (req.headers['sec-fetch-mode'] || '').toLowerCase();
-  const fetchDest = (req.headers['sec-fetch-dest'] || '').toLowerCase();
-  const ua = (req.headers['user-agent'] || '').toLowerCase();
-  if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('okhttp') || ua.includes('dalvik') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('libvlc')) return false;
-  if(fetchMode === 'navigate' && fetchDest === 'document') return true;
-  return false;
-}
-function fakePlayer(res){
-  res.setHeader('Content-Type','text/html; charset=utf-8');
-  res.setHeader('Cache-Control','no-store');
-  return res.send(`<!DOCTYPE html><html lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title></title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#000;overflow:hidden}body{display:flex;align-items:center;justify-content:center}video{width:100%;height:100%;background:#000;object-fit:contain}</style></head><body><video autoplay muted playsinline controls></video><script>document.addEventListener('contextmenu',e=>e.preventDefault());document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey)||(e.ctrlKey&&e.key==='u'))e.preventDefault();});</script></body></html>`);
-}
-
 function parseCookies(req){
   const c = {};
   (req.headers.cookie || '').split(';').forEach(p=>{
@@ -163,11 +148,10 @@ app.get('/login', (req, res) => {
   .remember{display:flex;align-items:center;gap:8px;justify-content:flex-start;margin:2px 0 14px;font-size:13px;color:#334155;cursor:pointer}
   .remember input{width:auto !important;margin:0 !important;padding:0 !important;accent-color:#2563eb}
   </style></head>
-  <body><div class="box"><h2>🔐 دخول الموزع</h2><p>اكتب باسورد اللوحة للدخول</p>
+  <body><div class="box"><h2>دخول الموزع</h2><p>اكتب باسورد اللوحة للدخول</p>
   <form method="POST" action="/login" autocomplete="off">
-    <input type="text" name="fakeuser" style="display:none" tabindex="-1" autocomplete="off">
-    <input type="password" name="pass" placeholder="الباسورد" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" required autofocus>
-    <label class="remember"><input type="checkbox" name="remember" checked> ☑️ حفظ تسجيل الدخول - ابقى داخل 30 يوم</label>
+    <input type="password" name="pass" placeholder="الباسورد" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required autofocus>
+    <label class="remember"><input type="checkbox" name="remember" checked> حفظ تسجيل الدخول - ابقى داخل 30 يوم</label>
     <button>دخول</button>
   </form>
   ${req.query.err ? '<div class="err">باسورد غلط، حاول مرة ثانية</div>' : ''}
@@ -199,8 +183,6 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-// ===== حماية الماك + البصمة - مشتركة لكل الانظمة =====
-// ترجع { ok:true, sub } او { ok:false, msg }
 async function checkDevice(req, code, macParam){
   const sub = await getSubscriber(code);
   if(!sub) return { ok:false, msg:"Code not found" };
@@ -211,8 +193,6 @@ async function checkDevice(req, code, macParam){
   const ua = (req.headers['user-agent'] || '').toString();
   const mac = (macParam || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
-  // البصمة = IP + نوع الجهاز + الماك الحقيقي
-  // بالـ Portal الماك يجي من الرسيفر نفسه، ما يكدر المشترك يزوره بالرابط
   const fingerprint = crypto.createHash('md5').update(ip + '|' + ua + '|' + mac).digest('hex');
   const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
   const diffMin = (Date.now() - lastSeen) / 60000;
@@ -233,7 +213,6 @@ async function checkDevice(req, code, macParam){
 }
 
 async function sendPlaylist(req, res){
-  if(isBrowser(req)) return fakePlayer(res);
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
   const check = await checkDevice(req, code, req.query.mac || req.query.device || '');
@@ -253,8 +232,7 @@ app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
 
-// ===== Xtream Codes API - للرسيفرات و تطبيقات IPTV =====
-// الرسيفر يدخل: Server = دومينك , Username = الكود , Password = نفس الكود
+// ===== Xtream Codes API =====
 app.get('/player_api.php', async (req, res) => {
   const username = req.query.username || '';
   const password = req.query.password || '';
@@ -275,7 +253,6 @@ app.get('/player_api.php', async (req, res) => {
     }
     return res.json([]);
   }
-  // get_account_info
   const exp = sub.expiry ? Math.floor(new Date(sub.expiry).getTime()/1000) : Math.floor(Date.now()/1000)+365*24*3600;
   return res.json({
     user_info:{ username, password, message:"", auth:1, status:"Active", exp_date:String(exp), is_trial:"0", active_cons:"1", created_at:String(Math.floor(Date.now()/1000)), max_connections:"1", allowed_output_formats:["m3u8","ts"] },
@@ -283,7 +260,6 @@ app.get('/player_api.php', async (req, res) => {
   });
 });
 
-// تشغيل قناة Xtream: /live/CODE/CODE/5.m3u8 او .ts
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
@@ -295,9 +271,7 @@ app.get('/live/:user/:pass/:id', async (req, res) => {
   return res.redirect(302, ch.url);
 });
 
-// ===== Stalker Portal - يطلع كتطبيق داخل الرسيفر =====
-// الرسيفر يدخل: Portal = https://دومينك/stalker_portal/server/load.php
-// و الماك ياخذه الرسيفر اوتوماتيك من نفسه
+// ===== Stalker Portal =====
 async function stalkerHandler(req, res){
   const action = req.query.action || req.body.action || '';
   const mac = (req.query.mac || req.body.mac || req.headers['x-mac'] || '').toString().toUpperCase();
@@ -306,10 +280,7 @@ async function stalkerHandler(req, res){
   if(action === 'handshake'){
     return res.json({ js:{ token:"123456", random:"abcdef", not_valid_token:0 } });
   }
-  // كل باقي الطلبات تحتاج كود المشترك - الرسيفر يدزه بـ login او بـ token
-  // نعتمد ان المشترك يدخل الكود كـ login في اعدادات البوابة
   const login = (req.query.login || req.body.login || token || '').toString();
-  // اذا ماكو login، نرجع بروفايل فارغ حتى الرسيفر ما يعلق
   if(action === 'get_profile'){
     return res.json({ js:{ id:1, name: login || "User", login: login, mac: mac, status:2, tariff_plan:"Premium" } });
   }
@@ -381,8 +352,8 @@ app.get('/admin', requireAdmin, (req, res) => {
   @media(max-width:700px){.grid{grid-template-columns:1fr}}
   </style></head>
   <body><div class="wrap">
-  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● M3U + Xtream + Portal - حماية ماك</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
-  <div class="card"><h3>➕ اضافة مشترك جديد</h3>
+  <div class="header"><h2>لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>M3U + Xtream + Portal - حماية ماك</span><a class="logout" href="/logout">خروج</a></div></div>
+  <div class="card"><h3>اضافة مشترك جديد</h3>
   <div class="grid">
   <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
   <div><label>كود المشترك</label><input id="code" placeholder=" " autocomplete="off"></div>
@@ -391,8 +362,8 @@ app.get('/admin', requireAdmin, (req, res) => {
   </div>
   <button class="btn btn-add" onclick="addSub()">+ اضافة مشترك</button>
   </div>
-  <div class="card"><h3>🔍 بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود او MAC..." oninput="load()" style="margin-bottom:0" autocomplete="off"></div>
-  <div class="card" style="display:flex;gap:10px"><button class="btn btn-export" onclick="load()">تحديث القائمة</button><button class="btn btn-export" style="background:#fff;color:#0f172a;border:1px solid #e2e8f0" onclick="exportCSV()">📥 تصدير اكسل CSV</button></div>
+  <div class="card"><h3>بحث</h3><input id="search" placeholder="ابحث بالاسم او الكود او MAC..." oninput="load()" style="margin-bottom:0" autocomplete="off"></div>
+  <div class="card" style="display:flex;gap:10px"><button class="btn btn-export" onclick="load()">تحديث القائمة</button><button class="btn btn-export" style="background:#fff;color:#0f172a;border:1px solid #e2e8f0" onclick="exportCSV()">تصدير اكسل CSV</button></div>
   <div id="list"></div>
   <div id="debug" class="card" style="display:none;color:#991b1b;font-size:12px;white-space:pre-wrap"></div>
   </div>
@@ -403,7 +374,7 @@ app.get('/admin', requireAdmin, (req, res) => {
     const d=new Date(s);
     const now=new Date();
     const diffMin=Math.floor((now-d)/60000);
-    if(diffMin<1) return 'الان 🟢';
+    if(diffMin<1) return 'الان';
     if(diffMin<60) return 'قبل '+diffMin+' دقيقة';
     if(diffMin<1440) return 'قبل '+Math.floor(diffMin/60)+' ساعة';
     return d.toLocaleString('ar-IQ',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
@@ -418,12 +389,12 @@ app.get('/admin', requireAdmin, (req, res) => {
     let h='<table><tr><th>الاسم / الكود</th><th>بصمة الجهاز</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
       h+=\`<tr>
-        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">▶️ نسخ رابط ExoPlayer</button><br><button class="btn-small btn-orange" onclick="copyXtream('\${s.code}')">📡 نسخ بيانات Xtream</button></td>
+        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">نسخ رابط ExoPlayer</button><br><button class="btn-small btn-orange" onclick="copyXtream('\${s.code}')">نسخ بيانات Xtream</button></td>
         <td><span style="font-size:10px;direction:ltr">\${s.device_id ? s.device_id.slice(0,8)+'...' : 'لم يرتبط بعد'}</span><br><span style="color:#64748b;font-size:10px">MAC: \${s.mac_address||'-'}</span><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
-        <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">💾 حفظ التاريخ</button></td>
-        <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">🔄 تحديث اخر ظهور</button></td>
-        <td><span class="badge \${s.active?'on':'off'}">\${s.active?'✅ فعال':'⛔ موقوف'}</span></td>
-        <td><button class="btn-small btn-orange" onclick="resetDevice('\${s.code}')">🔓 فك ربط الجهاز</button><br><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td>
+        <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">حفظ التاريخ</button></td>
+        <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">تحديث اخر ظهور</button></td>
+        <td><span class="badge \${s.active?'on':'off'}">\${s.active?'فعال':'موقوف'}</span></td>
+        <td><button class="btn-small btn-orange" onclick="resetDevice('\${s.code}')">فك ربط الجهاز</button><br><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td>
       </tr>\`;
     });
     document.getElementById('list').innerHTML=h+'</table>';
@@ -449,19 +420,19 @@ app.get('/admin', requireAdmin, (req, res) => {
     const r=await fetch('/api/subs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json();
     if(!r.ok || j.error || j.message){ alert('فشل الاضافة: '+JSON.stringify(j)); showErr(JSON.stringify(j,null,2)); return; }
-    alert('تمت الاضافة ✅'); document.getElementById('name').value=''; document.getElementById('code').value=''; document.getElementById('mac').value=''; load();
+    alert('تمت الاضافة'); document.getElementById('name').value=''; document.getElementById('code').value=''; document.getElementById('mac').value=''; load();
   }
   async function saveDate(code){
     const expiry=document.getElementById('date-'+code).value;
     if(!expiry) return alert('اختار تاريخ');
     await fetch('/api/update-date',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,expiry})});
-    alert('تم تعديل التاريخ الى '+expiry+' ✅'); load();
+    alert('تم تعديل التاريخ الى '+expiry); load();
   }
   async function saveMac(code){
     const mac=prompt('اكتب MAC الجديد (اختياري)');
     if(mac===null) return;
     await fetch('/api/update-mac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,mac_address:mac.toUpperCase()})});
-    alert('تم حفظ MAC ✅'); load();
+    alert('تم حفظ MAC'); load();
   }
   async function toggle(code,active){
     await fetch('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,active})});
@@ -470,7 +441,7 @@ app.get('/admin', requireAdmin, (req, res) => {
   async function resetDevice(code){
     if(!confirm('تفك ربط الجهاز لهذا المشترك؟ راح يسمح لجهاز جديد يشغل'))return;
     await fetch('/api/reset-device',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
-    alert('تم فك الربط ✅ الجهاز الجديد راح ينحجز من اول تشغيل'); load();
+    alert('تم فك الربط - الجهاز الجديد راح ينحجز من اول تشغيل'); load();
   }
   async function delSub(code){
     if(!confirm('متأكد حذف؟'))return;
@@ -534,8 +505,7 @@ app.get('/api/export', requireAdmin, async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  if(isBrowser(req)) return fakePlayer(res);
-  res.send("TV Server - Supabase OK");
+  res.send("TV Server - Online");
 });
 
 const PORT = process.env.PORT || 10000;
