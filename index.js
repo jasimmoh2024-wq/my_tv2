@@ -17,7 +17,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
- {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677021.m3u8"},
+ {"name":"1 - bein sport 1","logo":"https://lo1.in/bss/bsS1.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
   {"name":"2 - bein sport 2","logo":"https://lo1.in/bss/bsS2.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","logo":"https://lo1.in/bss/bs3.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","logo":"https://lo1.in/bss/bs4.png","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
@@ -116,13 +116,16 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","logo":"https://elyafgroup.com/cdn/shop/products/PINK-PANTHER_1080x.jpg","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
-// ===== اضافة: كشف المتصفح + مشغل وهمي - مصلح للـ ExoPlayer =====
+// ===== كشف المتصفح - يشتغل على VLC و ExoPlayer =====
 function isBrowser(req){
+  const fetchMode = (req.headers['sec-fetch-mode'] || '').toLowerCase();
+  const fetchDest = (req.headers['sec-fetch-dest'] || '').toLowerCase();
   const ua = (req.headers['user-agent'] || '').toLowerCase();
-  const accept = (req.headers['accept'] || '').toLowerCase();
-  if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('smartiptv') || ua.includes('iptv') || ua.includes('ott') || ua.includes('okhttp') || ua.includes('libvlc') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('enigma') || ua.includes('dreambox') || ua.includes('openpli') || ua.includes('dalvik') || ua.includes('android-tv') || ua.includes('smart-tv') || ua.includes('curl') || ua.includes('wget')) return false;
-  if(!accept.includes('text/html')) return false;
-  if(ua.includes('chrome') || ua.includes('firefox') || ua.includes('safari') || ua.includes('edg') || ua.includes('opera') || ua.includes('mozilla')) return true;
+  // مشغلات معروفة ابدا مو متصفح
+  if(ua.includes('vlc') || ua.includes('exoplayer') || ua.includes('tivimate') || ua.includes('okhttp') || ua.includes('dalvik') || ua.includes('lavf') || ua.includes('ffmpeg') || ua.includes('libvlc')) return false;
+  // بس المتصفح الحقيقي يدز navigate + document
+  if(fetchMode === 'navigate' && fetchDest === 'document') return true;
+  // الباقي كله مشغل
   return false;
 }
 function fakePlayer(res){
@@ -158,23 +161,31 @@ app.get('/login', (req, res) => {
   h2{margin:0 0 6px} p{color:#64748b;font-size:13px;margin:0 0 18px}
   input{width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:12px;font-size:16px;outline:none;margin-bottom:12px;box-sizing:border-box}
   button{width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer}
-  .err{color:#dc2626;font-size:13px;margin-top:10px}</style></head>
+  .err{color:#dc2626;font-size:13px;margin-top:10px}
+  .remember{display:flex;align-items:center;gap:8px;justify-content:flex-start;margin:2px 0 14px;font-size:13px;color:#334155;cursor:pointer}
+  .remember input{width:auto !important;margin:0 !important;padding:0 !important;accent-color:#2563eb}
+  </style></head>
   <body><div class="box"><h2>🔐 دخول الموزع</h2><p>اكتب باسورد اللوحة للدخول</p>
   <form method="POST" action="/login" autocomplete="off">
     <input type="text" name="fakeuser" style="display:none" tabindex="-1" autocomplete="off">
     <input type="password" name="pass" placeholder="الباسورد" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" required autofocus>
+    <label class="remember"><input type="checkbox" name="remember" checked> ☑️ حفظ تسجيل الدخول - ابقى داخل 30 يوم</label>
     <button>دخول</button>
   </form>
   ${req.query.err ? '<div class="err">باسورد غلط، حاول مرة ثانية</div>' : ''}
-  <p style="margin-top:14px;font-size:11px">الباسورد لا ينحفظ في المتصفح</p>
+  <p style="margin-top:14px;font-size:11px">اذا ما اخترت حفظ، من تسد المتصفح راح يقفل</p>
   </div></body></html>`);
 });
 
 app.post('/login', (req, res) => {
   if(req.body.pass === ADMIN_PASS){
     const token = Buffer.from(ADMIN_PASS).toString('base64');
-    // مصلح: بدون Max-Age - كوكي جلسة، ينمسح من تسد المتصفح ويرجع يقفل
-    res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax`);
+    // اذا اختار حفظ: 30 يوم، اذا ما اختار: جلسة فقط تنمسح من تسد المتصفح
+    if(req.body.remember === 'on'){
+      res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30*24*60*60}`);
+    } else {
+      res.setHeader('Set-Cookie', `admin_auth=${token}; Path=/; HttpOnly; SameSite=Lax`);
+    }
     return res.redirect('/admin');
   }
   res.redirect('/login?err=1');
@@ -275,11 +286,6 @@ app.get('/admin', requireAdmin, (req, res) => {
   <div id="debug" class="card" style="display:none;color:#991b1b;font-size:12px;white-space:pre-wrap"></div>
   </div>
   <script>
-  // قفل تلقائي: اذا طلعت من الصفحة او ما تحركت 5 دقايق يقفل
-  let lastMove = Date.now();
-  ['mousemove','keydown','click','touchstart'].forEach(e => document.addEventListener(e, () => { lastMove = Date.now(); }));
-  document.addEventListener('visibilitychange', () => { if(document.hidden) { fetch('/logout').finally(()=>{ location.href='/login'; }); } });
-  setInterval(() => { if(Date.now() - lastMove > 5*60*1000) location.href='/logout'; }, 30000);
   function showErr(t){ const d=document.getElementById('debug'); d.style.display='block'; d.textContent=t; }
   function formatLast(s){
     if(!s) return 'لم يدخل بعد';
