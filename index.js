@@ -16,32 +16,105 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا - بس اسم + رابط، بدون شعار =====
+// ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677057.m3u8"},
-  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677058.m3u8"},
-  {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677059.m3u8"},
-  {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677060.m3u8"},
-  {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677061.m3u8"},
-  {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677062.m3u8"},
-  {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677063.m3u8"},
-  {"name":"8 - bein sport 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677064.m3u8"},
-  {"name":"9 - ALWAN SPORT 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276553.m3u8"},
-  {"name":"10 - ALWAN SPORT 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276552.m3u8"},
-  {"name":"11 - ALWAN SPORT 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276551.m3u8"},
-  {"name":"12 - ALWAN SPORT 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276550.m3u8"},
-  {"name":"13 - ALWAN SPORT 5","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276549.m3u8"},
-  {"name":"14 - ALWAN SPORT 6","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276548.m3u8"},
-  {"name":"15 - ALWAN SPORT 7","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276547.m3u8"},
-  {"name":"16 - ALWAN SPORT 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276546.m3u8"},
+ {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
+  {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
+  {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
+  {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/10675785266958/99039021857485/677007"},
+  {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/10675785266958/99039021857485/677008"},
+  {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/10675785266958/99039021857485/677009"},
+  {"name":"8 - bein sport 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677010.m3u8"},
+  {"name":"9 - ALWAN SPORT 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649689.m3u8"},
+  {"name":"10 - ALWAN SPORT 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649690.m3u8"},
+  {"name":"11 - ALWAN SPORT 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649691.m3u8"},
+  {"name":"12 - ALWAN SPORT 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649692.m3u8"},
+  {"name":"13 - ALWAN SPORT 5","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649693.m3u8"},
+  {"name":"14 - ALWAN SPORT 6","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649694.m3u8"},
+  {"name":"15 - ALWAN SPORT 7","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649695.m3u8"},
+  {"name":"16 - ALWAN SPORT 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649696.m3u8"},
   {"name":"17 - STARZPLAY SPORTS 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67376.m3u8"},
   {"name":"18 - STARZPLAY SPORTS 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67378.m3u8"},
-  {"name":"19 - Thamanya Sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226184.m3u8"},
-  {"name":"20 - Thamanya Sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226183.m3u8"},
-  {"name":"21 - Alwan Aflam 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276560.m3u8"},
-  {"name":"22 - Alwan Aflam 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276559.m3u8"},
-  {"name":"23 - Alwan Aflam 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276558.m3u8"},
-  {"name":"24 - Alwan Aflam 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276557.m3u8"},
+  {"name":"19 - Thamanya Sport 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/646086.m3u8"},
+  {"name":"20 - Thamanya Sport 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/646087.m3u8"},
+  {"name":"21 - Alwan Aflam 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649714.m3u8"},
+  {"name":"22 - Alwan Aflam 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649715.m3u8"},
+  {"name":"23 - Alwan Aflam 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649716.m3u8"},
+  {"name":"24 - Alwan Aflam 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649717.m3u8"},
+  {"name":"25 - ALWAN TURKEY","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649718.m3u8"},
+  {"name":"26 - Alwan Documentary","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649719.m3u8"},
+  {"name":"27 - ALWAN ATFAL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649720.m3u8"},
+  {"name":"28 - ALWAN MOSALSALAT","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649721.m3u8"},
+  {"name":"29 - ALWAN MOSALSALAT +","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649725.m3u8"},
+  {"name":"30 - ALWAN ANIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649726.m3u8"},
+  {"name":"31 - BEIN MOVIES 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/427.m3u8"},
+  {"name":"32 - BEIN MOVIES 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/428.m3u8"},
+  {"name":"33 - BEIN MOVIES 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/429.m3u8"},
+  {"name":"34 - BEIN MOVIES 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/430.m3u8"},
+  {"name":"35 - BEIN SERIES 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/431.m3u8"},
+  {"name":"36 - BEIN SERIES 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/432.m3u8"},
+  {"name":"37 - BEIN DRAMA","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/433.m3u8"},
+  {"name":"38 - vivo OSCAR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192835.m3u8"},
+  {"name":"39 - vivo CLUB","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192834.m3u8"},
+  {"name":"40 - vivo CINEMA 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192833.m3u8"},
+  {"name":"41 - vivo CINEMA 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192832.m3u8"},
+  {"name":"42 - vivo SHOWTIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192836.m3u8"},
+  {"name":"43 - vivo PLUS","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192837.m3u8"},
+  {"name":"44 - vivo SHOWTIME 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192836.m3u8"},
+  {"name":"45 - vivo MOVIES","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192838.m3u8"},
+  {"name":"46 - vivo SENTRAL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192839.m3u8"},
+  {"name":"47 - vivo WAR TIME","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192840.m3u8"},
+  {"name":"48 - signal Comedy","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192634.m3u8"},
+  {"name":"49 - signal ACTION","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192633.m3u8"},
+  {"name":"50 - signal Cinema","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192635.m3u8"},
+  {"name":"51 - signal AFLAM","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192636.m3u8"},
+  {"name":"52 - signal CLASSIC","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192637.m3u8"},
+  {"name":"53 - signal 90s AR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192638.m3u8"},
+  {"name":"54 - signal VOX","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192639.m3u8"},
+  {"name":"55 - signal GOLD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192640.m3u8"},
+  {"name":"56 - signal ANIME AR","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192642.m3u8"},
+  {"name":"57 - SHAHID ACTION 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192749.m3u8"},
+  {"name":"58 - SHAHID ANIME 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192746.m3u8"},
+  {"name":"59 - SHAHID ANIME 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192745.m3u8"},
+  {"name":"60 - SHAHID Comedy","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192739.m3u8"},
+  {"name":"61 - SHAHID ACTION 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192739.m3u8"},
+  {"name":"62 - SHAHID MARVEL","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192740.m3u8"},
+  {"name":"63 - SHAHID ASIAN","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192742.m3u8"},
+  {"name":"64 - SHAHID BOLLYWOOD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/192743.m3u8"},
+  {"name":"65 - ACTION MOVIES","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1396793.m3u8"},
+  {"name":"66 - SHAHID FILMS 1","url":"https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8"},
+  {"name":"67 - SHAHID FILMS 2","url":"https://shd-amg-fast.edgenextcdn.net/tx007/playlist.m3u8"},
+  {"name":"68 - SHAHID 1","url":"https://shd-amg-fast.edgenextcdn.net/tx017/playlist.m3u8"},
+  {"name":"69 - SHAHID 2","url":"https://shd-amg-fast.edgenextcdn.net/tx015/playlist.m3u8"},
+  {"name":"70 - SHAHID 3","url":"https://shd-amg-fast.edgenextcdn.net/tx014/playlist.m3u8"},
+  {"name":"71 - SHAHID 4","url":"https://shd-amg-fast.edgenextcdn.net/tx010/playlist.m3u8"},
+  {"name":"72 - SHAHID 5","url":"https://shd-amg-fast.edgenextcdn.net/tx013/playlist.m3u8"},
+  {"name":"73 - SHAHID 6","url":"https://shd-amg-fast.edgenextcdn.net/tx003/playlist.m3u8"},
+  {"name":"74 - SHAHID 7","url":"https://shd-amg-fast.edgenextcdn.net/tx005/playlist.m3u8"},
+  {"name":"75 - SHAHID 8","url":"https://shd-amg-fast.edgenextcdn.net/tx008/playlist.m3u8"},
+  {"name":"76 - SHAHID 9","url":"https://shd-amg-fast.edgenextcdn.net/tx009/playlist.m3u8"},
+  {"name":"77 - THRILLER Movies","url":"https://shd-amg-fast.edgenextcdn.net/tx011/playlist.m3u8"},
+  {"name":"78 - WILD","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625061.m3u8"},
+  {"name":"79 - travelXP","url":"http://stream.mcquack.net/451/index.m3u8"},
+  {"name":"80 - trave","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625063.m3u8"},
+  {"name":"81 - Asharq Documentary 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625069.m3u8"},
+  {"name":"82 - Animal Planet","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625075.m3u8"},
+  {"name":"83 - H HISORY","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625076.m3u8"},
+  {"name":"84 - Discovery","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625080.m3u8"},
+  {"name":"85 - Asharq Documentary 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/625067.m3u8"},
+  {"name":"86 - Al Jazeera Documents","url":"https://live-hls-apps-ajd-fa.getaj.net/AJD/index.m3u8"},
+  {"name":"87 - Kids Music 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193350.m3u8"},
+  {"name":"88 - Kids Music 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193347.m3u8"},
+  {"name":"89 - Kids Music 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193346.m3u8"},
+  {"name":"90 - Kids Music 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193348.m3u8"},
+  {"name":"91 - TOM And jerry 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193324.m3u8"},
+  {"name":"92 - TOM And jerry 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193323.m3u8"},
+  {"name":"93 - TOM And jerry 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193321.m3u8"},
+  {"name":"94 - Nickelodeon 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151195.m3u8"},
+  {"name":"95 - Nickelodeon 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151192.m3u8"},
+  {"name":"96 - pink panther 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193316.m3u8"},
+  {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
 ];
 
 function isBrowser(req){
@@ -126,44 +199,45 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-async function sendPlaylist(req, res){
-  if(isBrowser(req)) return fakePlayer(res);
-  const code = req.query.code;
-  if (!code) return res.status(403).send("No code");
+// ===== حماية الماك + البصمة - مشتركة لكل الانظمة =====
+// ترجع { ok:true, sub } او { ok:false, msg }
+async function checkDevice(req, code, macParam){
   const sub = await getSubscriber(code);
-  if (!sub) return res.status(403).send("Code not found");
-  if (!sub.active) return res.status(403).send("Account disabled - الاشتراك موقوف");
-  if (sub.expiry && new Date(sub.expiry) < new Date()) return res.status(403).send("Expired - انتهى اشتراكك");
+  if(!sub) return { ok:false, msg:"Code not found" };
+  if(!sub.active) return { ok:false, msg:"Account disabled - الاشتراك موقوف" };
+  if(sub.expiry && new Date(sub.expiry) < new Date()) return { ok:false, msg:"Expired - انتهى اشتراكك" };
 
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
   const ua = (req.headers['user-agent'] || '').toString();
-  const macParam = (req.query.mac || req.query.device || '').toString().trim().toUpperCase();
+  const mac = (macParam || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
-
-  // ===== حماية ضد مشاركة الرابط - بصمة الجهاز =====
-  // البصمة = IP + نوع المشغل + الماك اذا موجود
-  // اذا المشترك شير الرابط، الجهاز الثاني راح تكون بصمته مختلفة، فينحظر
-  const fingerprint = crypto.createHash('md5').update(ip + '|' + ua + '|' + macParam).digest('hex');
+  // البصمة = IP + نوع الجهاز + الماك الحقيقي
+  // بالـ Portal الماك يجي من الرسيفر نفسه، ما يكدر المشترك يزوره بالرابط
+  const fingerprint = crypto.createHash('md5').update(ip + '|' + ua + '|' + mac).digest('hex');
   const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
   const diffMin = (Date.now() - lastSeen) / 60000;
 
   if(sub.device_id){
-    // اذا الجهاز محجوز و البصمة مختلفة و الجهاز الاول بعده فعال (اخر 10 دقايق)
-    // يعني جهاز ثاني يحاول يشغل بنفس الوقت - نحظره
     if(sub.device_id !== fingerprint && diffMin < 10){
-      return res.status(403).send("هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر 10 دقائق");
+      return { ok:false, msg:"هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر 10 دقائق", sub };
     }
-    // اذا البصمة مختلفة و مرت 10 دقايق - نسمحله و ننقل الحجز للجهاز الجديد
     if(sub.device_id !== fingerprint && diffMin >= 10){
-      await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: macParam || sub.mac_address, device_ip: ip, last_seen: now }) });
+      await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: mac || sub.mac_address, device_ip: ip, last_seen: now }) });
     } else {
-      // نفس الجهاز - تحديث اخر ظهور فقط
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     }
   } else {
-    // اول جهاز يشغل - نحجز البصمة عليه
-    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: macParam || null, device_ip: ip, last_seen: now }) });
+    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: mac || null, device_ip: ip, last_seen: now }) });
   }
+  return { ok:true, sub };
+}
+
+async function sendPlaylist(req, res){
+  if(isBrowser(req)) return fakePlayer(res);
+  const code = req.query.code;
+  if (!code) return res.status(403).send("No code");
+  const check = await checkDevice(req, code, req.query.mac || req.query.device || '');
+  if(!check.ok) return res.status(403).send(check.msg);
 
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach(c => {
@@ -178,6 +252,98 @@ async function sendPlaylist(req, res){
 app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
+
+// ===== Xtream Codes API - للرسيفرات و تطبيقات IPTV =====
+// الرسيفر يدخل: Server = دومينك , Username = الكود , Password = نفس الكود
+app.get('/player_api.php', async (req, res) => {
+  const username = req.query.username || '';
+  const password = req.query.password || '';
+  const action = req.query.action || '';
+  if(!username || password !== username) return res.json({ user_info:{ auth:0, status:"Banned" }, server_info:{} });
+  const check = await checkDevice(req, username, req.query.mac || '');
+  if(!check.ok) return res.json({ user_info:{ auth:0, status:"Banned", message: check.msg }, server_info:{} });
+  const sub = check.sub;
+
+  if(action === 'get_live_categories' || action === 'get_live_streams' || action === 'get_vod_categories' || action === 'get_vod_streams' || action === 'get_series_categories' || action === 'get_series'){
+    if(action.includes('categories')) return res.json([{ category_id:"1", category_name:"Live", parent_id:0 }]);
+    if(action === 'get_live_streams'){
+      return res.json(CHANNELS.map((c,i)=>({
+        num: i+1, name: c.name, stream_type:"live", stream_id: i+1,
+        stream_icon:"", epg_channel_id:"", added:"", category_id:"1",
+        custom_sid:"", tv_archive:0, direct_source:"", tv_archive_duration:0
+      })));
+    }
+    return res.json([]);
+  }
+  // get_account_info
+  const exp = sub.expiry ? Math.floor(new Date(sub.expiry).getTime()/1000) : Math.floor(Date.now()/1000)+365*24*3600;
+  return res.json({
+    user_info:{ username, password, message:"", auth:1, status:"Active", exp_date:String(exp), is_trial:"0", active_cons:"1", created_at:String(Math.floor(Date.now()/1000)), max_connections:"1", allowed_output_formats:["m3u8","ts"] },
+    server_info:{ url:"", port:"", https_port:"", server_protocol:"http", rtmp_port:"", timezone:"Asia/Baghdad", timestamp_now: Math.floor(Date.now()/1000), time_now: new Date().toISOString() }
+  });
+});
+
+// تشغيل قناة Xtream: /live/CODE/CODE/5.m3u8 او .ts
+app.get('/live/:user/:pass/:id', async (req, res) => {
+  const { user, pass, id } = req.params;
+  if(pass !== user) return res.status(403).send("Auth failed");
+  const check = await checkDevice(req, user, req.query.mac || '');
+  if(!check.ok) return res.status(403).send(check.msg);
+  const idx = parseInt(id.replace('.m3u8','').replace('.ts','')) - 1;
+  const ch = CHANNELS[idx];
+  if(!ch) return res.status(404).send("Channel not found");
+  return res.redirect(302, ch.url);
+});
+
+// ===== Stalker Portal - يطلع كتطبيق داخل الرسيفر =====
+// الرسيفر يدخل: Portal = https://دومينك/stalker_portal/server/load.php
+// و الماك ياخذه الرسيفر اوتوماتيك من نفسه
+async function stalkerHandler(req, res){
+  const action = req.query.action || req.body.action || '';
+  const mac = (req.query.mac || req.body.mac || req.headers['x-mac'] || '').toString().toUpperCase();
+  const token = req.query.token || req.body.token || '';
+
+  if(action === 'handshake'){
+    return res.json({ js:{ token:"123456", random:"abcdef", not_valid_token:0 } });
+  }
+  // كل باقي الطلبات تحتاج كود المشترك - الرسيفر يدزه بـ login او بـ token
+  // نعتمد ان المشترك يدخل الكود كـ login في اعدادات البوابة
+  const login = (req.query.login || req.body.login || token || '').toString();
+  // اذا ماكو login، نرجع بروفايل فارغ حتى الرسيفر ما يعلق
+  if(action === 'get_profile'){
+    return res.json({ js:{ id:1, name: login || "User", login: login, mac: mac, status:2, tariff_plan:"Premium" } });
+  }
+  if(!login) return res.json({ js:{ data:[] } });
+  const check = await checkDevice(req, login, mac);
+  if(!check.ok) return res.json({ js:{ error: check.msg } });
+
+  if(action === 'get_all_channels' || action === 'get_ordered_list'){
+    const data = CHANNELS.map((c,i)=>({
+      id: String(i+1), name: c.name, number: String(i+1),
+      tv_genre_id:"1", base_ch:0, service_id: String(i+1),
+      enable_tv_archive:0, tv_archive_duration:0,
+      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.m3u8`,
+      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.m3u8`,
+      cmd_2: "", cmd_3: "", logo:"", use_http_tmp_link:0, wowza_dvr:0
+    }));
+    return res.json({ js:{ total_items: data.length, max_page_items:500, data } });
+  }
+  if(action === 'create_link'){
+    const chId = parseInt(req.query.ch_id || req.body.ch_id || '1') - 1;
+    const ch = CHANNELS[chId] || CHANNELS[0];
+    const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}.m3u8`;
+    return res.json({ js:{ id: String(chId+1), cmd: url, type:"live", error:"" } });
+  }
+  if(action === 'get_genres' || action === 'get_tv_genres'){
+    return res.json({ js:[{ id:"1", title:"Live", alias:"live" }] });
+  }
+  return res.json({ js:{} });
+}
+app.get('/stalker_portal/server/load.php', stalkerHandler);
+app.post('/stalker_portal/server/load.php', stalkerHandler);
+app.get('/portal.php', stalkerHandler);
+app.post('/portal.php', stalkerHandler);
+app.get('/c/', stalkerHandler);
 
 app.get('/admin', requireAdmin, (req, res) => {
   res.send(`
@@ -215,7 +381,7 @@ app.get('/admin', requireAdmin, (req, res) => {
   @media(max-width:700px){.grid{grid-template-columns:1fr}}
   </style></head>
   <body><div class="wrap">
-  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● حماية جهاز واحد - ضد مشاركة الرابط</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
+  <div class="header"><h2>📺 لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>● M3U + Xtream + Portal - حماية ماك</span><a class="logout" href="/logout">🔓 خروج</a></div></div>
   <div class="card"><h3>➕ اضافة مشترك جديد</h3>
   <div class="grid">
   <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
@@ -252,7 +418,7 @@ app.get('/admin', requireAdmin, (req, res) => {
     let h='<table><tr><th>الاسم / الكود</th><th>بصمة الجهاز</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
     data.forEach(s=>{
       h+=\`<tr>
-        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">▶️ نسخ رابط ExoPlayer</button></td>
+        <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">📋 نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">▶️ نسخ رابط ExoPlayer</button><br><button class="btn-small btn-orange" onclick="copyXtream('\${s.code}')">📡 نسخ بيانات Xtream</button></td>
         <td><span style="font-size:10px;direction:ltr">\${s.device_id ? s.device_id.slice(0,8)+'...' : 'لم يرتبط بعد'}</span><br><span style="color:#64748b;font-size:10px">MAC: \${s.mac_address||'-'}</span><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
         <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">💾 حفظ التاريخ</button></td>
         <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">🔄 تحديث اخر ظهور</button></td>
@@ -265,12 +431,17 @@ app.get('/admin', requireAdmin, (req, res) => {
   function copyLink(code){
     const base=location.origin+'/playlist?code='+code+'&player=1';
     navigator.clipboard.writeText(base);
-    alert('تم نسخ رابط VLC:\\n'+base+'\\n\\nملاحظة: الرابط بدون MAC، السيرفر راح يبصم اول جهاز يشغله ويمنع الثاني');
+    alert('تم نسخ رابط VLC:\\n'+base);
   }
   function copyExo(code){
     const base=location.origin+'/playlist.m3u8?code='+code+'&player=1';
     navigator.clipboard.writeText(base);
     alert('تم نسخ رابط ExoPlayer:\\n'+base);
+  }
+  function copyXtream(code){
+    const txt='Server: '+location.origin+'\\nUsername: '+code+'\\nPassword: '+code+'\\nPortal: '+location.origin+'/stalker_portal/server/load.php';
+    navigator.clipboard.writeText(txt);
+    alert('تم نسخ بيانات الرسيفر:\\n\\n'+txt+'\\n\\nدزها للمشترك، يخليها بالرسيفر ويطلع كتطبيق');
   }
   async function addSub(){
     const body={name:document.getElementById('name').value,code:document.getElementById('code').value,mac_address:document.getElementById('mac').value.toUpperCase(),expiry:document.getElementById('expiry').value};
