@@ -36,6 +36,8 @@ const CHANNELS = [
   {"name":"16 - ALWAN SPORT 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276546.m3u8"},
   {"name":"17 - STARZPLAY SPORTS 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67376.m3u8"},
   {"name":"18 - STARZPLAY SPORTS 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/67378.m3u8"},
+  {"name":"19 - Thamanya Sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226184.m3u8"},
+  {"name":"20 - Thamanya Sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1226183.m3u8"},
 ];
 
 function isBrowser(req){
