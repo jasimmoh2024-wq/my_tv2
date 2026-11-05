@@ -26,6 +26,14 @@ const CHANNELS = [
   {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677062.m3u8"},
   {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677063.m3u8"},
   {"name":"8 - bein sport 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677064.m3u8"},
+  {"name":"9 - ALWAN SPORT 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276553.m3u8"},
+  {"name":"10 - ALWAN SPORT 2","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276552.m3u8"},
+  {"name":"11 - ALWAN SPORT 3","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276551.m3u8"},
+  {"name":"12 - ALWAN SPORT 4","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276550.m3u8"},
+  {"name":"13 - ALWAN SPORT 5","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276549.m3u8"},
+  {"name":"14 - ALWAN SPORT 6","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276548.m3u8"},
+  {"name":"15 - ALWAN SPORT 7","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276547.m3u8"},
+  {"name":"16 - ALWAN SPORT 8","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/1276546.m3u8"},
 ];
 
 function isBrowser(req){
