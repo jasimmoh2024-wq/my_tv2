@@ -18,13 +18,13 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
- {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
-  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
-  {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
-  {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
-  {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/10675785266958/99039021857485/677007"},
-  {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/10675785266958/99039021857485/677008"},
-  {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/10675785266958/99039021857485/677009"},
+ {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677003.m3u8"},
+  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677004.m3u8"},
+  {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677005.m3u8"},
+  {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677006.m3u8"},
+  {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677007.m3u8"},
+  {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677008.m3u8"},
+  {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677009.m3u8"},
   {"name":"8 - bein sport 8","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677010.m3u8"},
   {"name":"9 - ALWAN SPORT 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649689.m3u8"},
   {"name":"10 - ALWAN SPORT 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/649690.m3u8"},
