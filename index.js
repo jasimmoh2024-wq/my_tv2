@@ -18,8 +18,8 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
- {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
-  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677004.m3u8"},
+  {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+  {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677005.m3u8"},
   {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677006.m3u8"},
   {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/677007.m3u8"},
