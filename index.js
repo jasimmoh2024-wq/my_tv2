@@ -183,19 +183,27 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-async function checkDevice(req, code, macParam){
+// ===== تم التعديل هنا: بصمة الجهاز صارت IP + MAC فقط، بدون UA =====
+// حتى لا يحظر الرسيفر من يغير الـ UA بين الطلبات
+async function checkDevice(req, code, macParam, skipLock){
   const sub = await getSubscriber(code);
   if(!sub) return { ok:false, msg:"Code not found" };
   if(!sub.active) return { ok:false, msg:"Account disabled - الاشتراك موقوف" };
   if(sub.expiry && new Date(sub.expiry) < new Date()) return { ok:false, msg:"Expired - انتهى اشتراكك" };
 
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
-  const ua = (req.headers['user-agent'] || '').toString();
   const mac = (macParam || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
-  const fingerprint = crypto.createHash('md5').update(ip + '|' + ua + '|' + mac).digest('hex');
+  // البصمة الجديدة: IP + MAC فقط
+  const fingerprint = crypto.createHash('md5').update(ip + '|' + mac).digest('hex');
   const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
   const diffMin = (Date.now() - lastSeen) / 60000;
+
+  // اذا كان طلب قائمة قنوات فقط، لا تحظر، فقط حدث اخر ظهور
+  if(skipLock){
+    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
+    return { ok:true, sub };
+  }
 
   if(sub.device_id){
     if(sub.device_id !== fingerprint && diffMin < 10){
@@ -232,15 +240,31 @@ app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
 
-// ===== Xtream Codes API =====
+// ===== Xtream Codes API - تم التعديل هنا =====
 app.get('/player_api.php', async (req, res) => {
   const username = req.query.username || '';
   const password = req.query.password || '';
   const action = req.query.action || '';
   if(!username || password !== username) return res.json({ user_info:{ auth:0, status:"Banned" }, server_info:{} });
-  const check = await checkDevice(req, username, req.query.mac || '');
+  // طلبات القائمة لا تحظر الجهاز، فقط طلب التشغيل يحظر
+  const isListRequest = action === 'get_live_categories' || action === 'get_live_streams' || action === 'get_vod_categories' || action === 'get_vod_streams' || action === 'get_series_categories' || action === 'get_series';
+  const check = await checkDevice(req, username, req.query.mac || '', isListRequest);
   if(!check.ok) return res.json({ user_info:{ auth:0, status:"Banned", message: check.msg }, server_info:{} });
   const sub = check.sub;
+
+  // بناء server_info صح حتى الرسيفر يعرف وين يجيب القنوات
+  const host = req.get('host');
+  const proto = req.protocol; // https على Render
+  const serverInfo = {
+    url: host,
+    port: "443",
+    https_port: "443",
+    server_protocol: "https",
+    rtmp_port: "1935",
+    timezone: "Asia/Baghdad",
+    timestamp_now: Math.floor(Date.now()/1000),
+    time_now: new Date().toISOString()
+  };
 
   if(action === 'get_live_categories' || action === 'get_live_streams' || action === 'get_vod_categories' || action === 'get_vod_streams' || action === 'get_series_categories' || action === 'get_series'){
     if(action.includes('categories')) return res.json([{ category_id:"1", category_name:"Live", parent_id:0 }]);
@@ -248,7 +272,9 @@ app.get('/player_api.php', async (req, res) => {
       return res.json(CHANNELS.map((c,i)=>({
         num: i+1, name: c.name, stream_type:"live", stream_id: i+1,
         stream_icon:"", epg_channel_id:"", added:"", category_id:"1",
-        custom_sid:"", tv_archive:0, direct_source:"", tv_archive_duration:0
+        custom_sid:"", tv_archive:0,
+        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}.m3u8`,
+        tv_archive_duration:0
       })));
     }
     return res.json([]);
@@ -256,7 +282,7 @@ app.get('/player_api.php', async (req, res) => {
   const exp = sub.expiry ? Math.floor(new Date(sub.expiry).getTime()/1000) : Math.floor(Date.now()/1000)+365*24*3600;
   return res.json({
     user_info:{ username, password, message:"", auth:1, status:"Active", exp_date:String(exp), is_trial:"0", active_cons:"1", created_at:String(Math.floor(Date.now()/1000)), max_connections:"1", allowed_output_formats:["m3u8","ts"] },
-    server_info:{ url:"", port:"", https_port:"", server_protocol:"http", rtmp_port:"", timezone:"Asia/Baghdad", timestamp_now: Math.floor(Date.now()/1000), time_now: new Date().toISOString() }
+    server_info: serverInfo
   });
 });
 
@@ -285,7 +311,7 @@ async function stalkerHandler(req, res){
     return res.json({ js:{ id:1, name: login || "User", login: login, mac: mac, status:2, tariff_plan:"Premium" } });
   }
   if(!login) return res.json({ js:{ data:[] } });
-  const check = await checkDevice(req, login, mac);
+  const check = await checkDevice(req, login, mac, true);
   if(!check.ok) return res.json({ js:{ error: check.msg } });
 
   if(action === 'get_all_channels' || action === 'get_ordered_list'){
@@ -497,8 +523,8 @@ app.delete('/api/subs', requireAdmin, async (req, res) => {
 app.get('/api/export', requireAdmin, async (req, res) => {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc`, { headers });
   const data = await r.json();
-  let csv = "name,code,mac_address,active,expiry,last_seen,device_ip\n";
-  data.forEach(s => csv += `"${s.name}","${s.code}","${s.mac_address||''}",${s.active},${s.expiry},"${s.last_seen||''}","${s.device_ip||''}"\n`);
+  let csv = "name,code,mac_address,active,expiry,last_seen,device_ip\\n";
+  data.forEach(s => csv += `"${s.name}","${s.code}","${s.mac_address||''}",${s.active},${s.expiry},"${s.last_seen||''}","${s.device_ip||''}"\\n`);
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename=subscribers.csv');
   res.send(csv);
