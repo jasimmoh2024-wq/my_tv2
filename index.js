@@ -114,7 +114,7 @@ const CHANNELS = [
   {"name":"94 - Nickelodeon 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151195.m3u8"},
   {"name":"95 - Nickelodeon 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/151192.m3u8"},
   {"name":"96 - pink panther 1","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193316.m3u8"},
-  {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"}
+  {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/live/10675785266958/99039021857485/193317.m3u8"},
   {"name":"98 - test","url":"http://tyqw.site:2052/10675785266958/99039021857485/677084.m3u8"}
 ];
 
