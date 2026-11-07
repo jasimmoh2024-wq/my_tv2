@@ -18,7 +18,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
+  {"name":"1 - bein sport 1","url":"https://blcco.linkip.org/live/3461_412.ts"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4010"},
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4012"},
   {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953607"},
