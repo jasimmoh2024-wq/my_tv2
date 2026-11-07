@@ -18,7 +18,7 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/677003"},
+  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
   {"name":"2 - bein sport 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/677004"},
   {"name":"3 - bein sport 3","url":"http://tyqw.site:2052/10675785266958/99039021857485/677005"},
   {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
