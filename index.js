@@ -5,9 +5,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', true);
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://djrljivwmwywammiuixr.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_pHEayYHNNS-sPM4-sepq0A_jvpdgaUi";
-const ADMIN_PASS = process.env.ADMIN_PASS || "jasim1241979@";
+// بدون قيم ثابتة - لازم تكون بالـ Environment فقط
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_KEY = process.env.SUPABASE_KEY || "";
+const ADMIN_PASS = process.env.ADMIN_PASS || "change-me";
 
 const headers = {
   "apikey": SUPABASE_KEY,
@@ -184,8 +185,8 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-// ===== تم التعديل هنا: بصمة الجهاز صارت IP + MAC فقط، بدون UA =====
-// حتى لا يحظر الرسيفر من يغير الـ UA بين الطلبات
+// ===== تم التصليح: البصمة MAC فقط، مو IP + MAC =====
+// IP بالعراق يتغير بسبب CGNAT وكان يسبب حظر وهمي وتقطيع
 async function checkDevice(req, code, macParam, skipLock){
   const sub = await getSubscriber(code);
   if(!sub) return { ok:false, msg:"Code not found" };
@@ -195,22 +196,27 @@ async function checkDevice(req, code, macParam, skipLock){
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
   const mac = (macParam || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
-  // البصمة الجديدة: IP + MAC فقط
-  const fingerprint = crypto.createHash('md5').update(ip + '|' + mac).digest('hex');
   const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
   const diffMin = (Date.now() - lastSeen) / 60000;
 
-  // اذا كان طلب قائمة قنوات فقط، لا تحظر، فقط حدث اخر ظهور
   if(skipLock){
     await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     return { ok:true, sub };
   }
 
+  // اذا ماكو MAC، لا تحظر ابداً - الكود يكفي
+  if(!mac){
+    await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
+    return { ok:true, sub };
+  }
+
+  const fingerprint = crypto.createHash('md5').update(mac).digest('hex');
+
   if(sub.device_id){
-    if(sub.device_id !== fingerprint && diffMin < 10){
-      return { ok:false, msg:"هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر 10 دقائق", sub };
+    if(sub.device_id !== fingerprint && diffMin < 2){
+      return { ok:false, msg:"هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر دقيقتين", sub };
     }
-    if(sub.device_id !== fingerprint && diffMin >= 10){
+    if(sub.device_id !== fingerprint && diffMin >= 2){
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ device_id: fingerprint, mac_address: mac || sub.mac_address, device_ip: ip, last_seen: now }) });
     } else {
       await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
@@ -224,12 +230,15 @@ async function checkDevice(req, code, macParam, skipLock){
 async function sendPlaylist(req, res){
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
-  const check = await checkDevice(req, code, req.query.mac || req.query.device || '');
+  const check = await checkDevice(req, code, req.query.mac || req.query.device || '', true);
   if(!check.ok) return res.status(403).send(check.msg);
 
+  // تم التصليح: الروابط ترجع لسيرفرك مو مباشرة للمصدر - حتى لا تنكشف روابطك
+  const base = `${req.protocol}://${req.get('host')}`;
   let m3u = "#EXTM3U\n";
-  CHANNELS.forEach(c => {
-    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${c.url}\n`;
+  CHANNELS.forEach((c,i) => {
+    const proxied = `${base}/live/${code}/${code}/${i+1}.m3u8`;
+    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${proxied}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/x-mpegURL; charset=utf-8');
@@ -241,21 +250,19 @@ app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
 
-// ===== Xtream Codes API - تم التعديل هنا =====
+// ===== Xtream Codes API =====
 app.get('/player_api.php', async (req, res) => {
   const username = req.query.username || '';
   const password = req.query.password || '';
   const action = req.query.action || '';
   if(!username || password !== username) return res.json({ user_info:{ auth:0, status:"Banned" }, server_info:{} });
-  // طلبات القائمة لا تحظر الجهاز، فقط طلب التشغيل يحظر
   const isListRequest = action === 'get_live_categories' || action === 'get_live_streams' || action === 'get_vod_categories' || action === 'get_vod_streams' || action === 'get_series_categories' || action === 'get_series';
   const check = await checkDevice(req, username, req.query.mac || '', isListRequest);
   if(!check.ok) return res.json({ user_info:{ auth:0, status:"Banned", message: check.msg }, server_info:{} });
   const sub = check.sub;
 
-  // بناء server_info صح حتى الرسيفر يعرف وين يجيب القنوات
   const host = req.get('host');
-  const proto = req.protocol; // https على Render
+  const proto = req.protocol;
   const serverInfo = {
     url: host,
     port: "443",
@@ -290,11 +297,13 @@ app.get('/player_api.php', async (req, res) => {
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
-  const check = await checkDevice(req, user, req.query.mac || '');
+  // تم التصليح: skipLock = true حتى التشغيل ما ينحظر بسبب تغير IP
+  const check = await checkDevice(req, user, req.query.mac || '', true);
   if(!check.ok) return res.status(403).send(check.msg);
   const idx = parseInt(id.replace('.m3u8','').replace('.ts','')) - 1;
   const ch = CHANNELS[idx];
   if(!ch) return res.status(404).send("Channel not found");
+  res.setHeader('Cache-Control', 'no-cache');
   return res.redirect(302, ch.url);
 });
 
