@@ -18,14 +18,14 @@ const headers = {
 
 // ===== قنواتك هنا =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"https://blcco.linkip.org/live/3461_412.ts"},
-  {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4010"},
-  {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4012"},
-  {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953607"},
-  {"name":"5 - bein sport 5","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/5032"},
-  {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/10675785266958/99039021857485/677008"},
-  {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/10675785266958/99039021857485/677009"},
-  {"name":"8 - bein sport 8","url":"http://tyqw.site:2052/10675785266958/99039021857485/677010"},
+  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953589"},
+  {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953588"},
+  {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953587"},
+  {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953586"},
+  {"name":"5 - bein sport 5","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953585"},
+  {"name":"6 - bein sport 6","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953584"},
+  {"name":"7 - bein sport 7","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953583"},
+  {"name":"8 - bein sport 8","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953582"},
   {"name":"9 - ALWAN SPORT 1","url":"http://tyqw.site:2052/10675785266958/99039021857485/649689"},
   {"name":"10 - ALWAN SPORT 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/649690"},
   {"name":"11 - ALWAN SPORT 3","url":"http://tyqw.site:2052/10675785266958/99039021857485/649691"},
