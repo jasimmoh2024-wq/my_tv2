@@ -21,7 +21,7 @@ const CHANNELS = [
   {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4010"},
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4012"},
-  {"name":"4 - bein sport 4","url":"http://tyqw.site:2052/10675785266958/99039021857485/677006"},
+  {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953607"},
   {"name":"5 - bein sport 5","url":"http://tyqw.site:2052/10675785266958/99039021857485/677007"},
   {"name":"6 - bein sport 6","url":"http://tyqw.site:2052/10675785266958/99039021857485/677008"},
   {"name":"7 - bein sport 7","url":"http://tyqw.site:2052/10675785266958/99039021857485/677009"},
