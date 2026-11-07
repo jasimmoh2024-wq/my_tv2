@@ -5,7 +5,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', true);
 
-// بدون قيم ثابتة - لازم تكون بالـ Environment فقط
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "";
 const ADMIN_PASS = process.env.ADMIN_PASS || "change-me";
@@ -17,7 +16,6 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== قنواتك هنا =====
 const CHANNELS = [
   {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/16"},
@@ -119,6 +117,9 @@ const CHANNELS = [
   {"name":"98 - test","url":"http://tyqw.site:2052/10675785266958/99039021857485/677084"}
 ];
 
+// كاش 15 دقيقة - هذا هو التصليح مال الانقطاع
+const subCache = new Map();
+
 function parseCookies(req){
   const c = {};
   (req.headers.cookie || '').split(';').forEach(p=>{
@@ -185,8 +186,6 @@ async function getSubscriber(code) {
   return data[0];
 }
 
-// ===== تم التصليح: البصمة MAC فقط، مو IP + MAC =====
-// IP بالعراق يتغير بسبب CGNAT وكان يسبب حظر وهمي وتقطيع
 async function checkDevice(req, code, macParam, skipLock){
   const sub = await getSubscriber(code);
   if(!sub) return { ok:false, msg:"Code not found" };
@@ -204,7 +203,6 @@ async function checkDevice(req, code, macParam, skipLock){
     return { ok:true, sub };
   }
 
-  // اذا ماكو MAC، لا تحظر ابداً - الكود يكفي
   if(!mac){
     await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     return { ok:true, sub };
@@ -233,12 +231,9 @@ async function sendPlaylist(req, res){
   const check = await checkDevice(req, code, req.query.mac || req.query.device || '', true);
   if(!check.ok) return res.status(403).send(check.msg);
 
-  // تم التصليح: الروابط ترجع لسيرفرك مو مباشرة للمصدر - حتى لا تنكشف روابطك
-  const base = `${req.protocol}://${req.get('host')}`;
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach((c,i) => {
-    const proxied = `${base}/live/${code}/${code}/${i+1}.m3u8`;
-    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${proxied}\n`;
+    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${c.url}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/x-mpegURL; charset=utf-8');
@@ -250,7 +245,6 @@ app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
 
-// ===== Xtream Codes API =====
 app.get('/player_api.php', async (req, res) => {
   const username = req.query.username || '';
   const password = req.query.password || '';
@@ -281,7 +275,7 @@ app.get('/player_api.php', async (req, res) => {
         num: i+1, name: c.name, stream_type:"live", stream_id: i+1,
         stream_icon:"", epg_channel_id:"", added:"", category_id:"1",
         custom_sid:"", tv_archive:0,
-        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}.m3u8`,
+        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}.ts`,
         tv_archive_duration:0
       })));
     }
@@ -294,12 +288,20 @@ app.get('/player_api.php', async (req, res) => {
   });
 });
 
+// ===== التصليح الرئيسي هنا: التشغيل ما يفحص Supabase كل مرة =====
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
-  // تم التصليح: skipLock = true حتى التشغيل ما ينحظر بسبب تغير IP
-  const check = await checkDevice(req, user, req.query.mac || '', true);
-  if(!check.ok) return res.status(403).send(check.msg);
+
+  // اذا المشترك انفحص قبل اقل من 15 دقيقة، مرره مباشرة بدون اي فحص
+  // هذا يمنع انقطاع القناة بعد فترة
+  const cached = subCache.get(user);
+  if(!cached || Date.now() - cached.time > 15*60*1000){
+    const check = await checkDevice(req, user, req.query.mac || '', true);
+    if(!check.ok) return res.status(403).send(check.msg);
+    subCache.set(user, { time: Date.now() });
+  }
+
   const idx = parseInt(id.replace('.m3u8','').replace('.ts','')) - 1;
   const ch = CHANNELS[idx];
   if(!ch) return res.status(404).send("Channel not found");
@@ -307,7 +309,6 @@ app.get('/live/:user/:pass/:id', async (req, res) => {
   return res.redirect(302, ch.url);
 });
 
-// ===== Stalker Portal =====
 async function stalkerHandler(req, res){
   const action = req.query.action || req.body.action || '';
   const mac = (req.query.mac || req.body.mac || req.headers['x-mac'] || '').toString().toUpperCase();
@@ -329,8 +330,8 @@ async function stalkerHandler(req, res){
       id: String(i+1), name: c.name, number: String(i+1),
       tv_genre_id:"1", base_ch:0, service_id: String(i+1),
       enable_tv_archive:0, tv_archive_duration:0,
-      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.m3u8`,
-      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.m3u8`,
+      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.ts`,
+      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.ts`,
       cmd_2: "", cmd_3: "", logo:"", use_http_tmp_link:0, wowza_dvr:0
     }));
     return res.json({ js:{ total_items: data.length, max_page_items:500, data } });
@@ -338,7 +339,7 @@ async function stalkerHandler(req, res){
   if(action === 'create_link'){
     const chId = parseInt(req.query.ch_id || req.body.ch_id || '1') - 1;
     const ch = CHANNELS[chId] || CHANNELS[0];
-    const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}.m3u8`;
+    const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}.ts`;
     return res.json({ js:{ id: String(chId+1), cmd: url, type:"live", error:"" } });
   }
   if(action === 'get_genres' || action === 'get_tv_genres'){
