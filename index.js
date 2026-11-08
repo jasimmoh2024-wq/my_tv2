@@ -16,8 +16,9 @@ const headers = {
   "Prefer": "return=representation"
 };
 
+// ===== كل القنوات بدون امتداد - مثل ما هي بالاصل =====
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4011.m3u8"},
+  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/16"},
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953587"},
   {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953586"},
@@ -224,6 +225,7 @@ async function checkDevice(req, code, macParam, skipLock){
   return { ok:true, sub };
 }
 
+// ===== Playlist بدون امتداد - مثل الاصل =====
 async function sendPlaylist(req, res){
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
@@ -235,7 +237,7 @@ async function sendPlaylist(req, res){
 
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach((c,i) => {
-    const proxiedUrl = `${proto}://${host}/live/${code}/${code}/${i+1}.ts`;
+    const proxiedUrl = `${proto}://${host}/live/${code}/${code}/${i+1}`;
     m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${proxiedUrl}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -278,7 +280,7 @@ app.get('/player_api.php', async (req, res) => {
         num: i+1, name: c.name, stream_type:"live", stream_id: i+1,
         stream_icon:"", epg_channel_id:"", added:"", category_id:"1",
         custom_sid:"", tv_archive:0,
-        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}.ts`,
+        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}`,
         tv_archive_duration:0
       })));
     }
@@ -291,7 +293,35 @@ app.get('/player_api.php', async (req, res) => {
   });
 });
 
-// ===== التصليح الجديد: Streaming حقيقي - ما ينتظر البث يخلص =====
+function rewriteM3u8(text, targetUrl, req, userForAuth){
+  const host = req.get('host');
+  const proto = req.protocol;
+  const lines = text.split('\n');
+  const rewritten = lines.map(line => {
+    const trimmed = line.trim();
+    if(!trimmed) return line;
+    if(trimmed.startsWith('#EXT-X-KEY') && trimmed.includes('URI="')){
+      return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
+        let full = uri;
+        try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
+        return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
+      });
+    }
+    if(trimmed.startsWith('#EXT-X-MAP') && trimmed.includes('URI="')){
+      return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
+        let full = uri;
+        try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
+        return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
+      });
+    }
+    if(trimmed.startsWith('#')) return line;
+    let full = trimmed;
+    try{ full = new URL(trimmed, targetUrl).toString(); }catch(e){}
+    return `${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}`;
+  });
+  return rewritten.join('\n');
+}
+
 async function proxyStream(req, res, targetUrl, userForAuth){
   try{
     const fetchHeaders = {
@@ -311,56 +341,39 @@ async function proxyStream(req, res, targetUrl, userForAuth){
     res.setHeader('X-Accel-Buffering', 'no');
     if(r.headers.get('accept-ranges')) res.setHeader('Accept-Ranges', r.headers.get('accept-ranges'));
 
-    // اذا كان m3u8 حقيقي فقط - نجيب النص ونعيد كتابة الروابط
-    // انتبه: القنوات 80 و 81 مو m3u8، هي بث TS مباشر، فلازم ما نعتبرها m3u8
-    const isReallyM3u8 = contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.endsWith('.m3u8');
-    if(isReallyM3u8){
-      let text = await r.text();
-      const host = req.get('host');
-      const proto = req.protocol;
-      const lines = text.split('\n');
-      const rewritten = lines.map(line => {
-        const trimmed = line.trim();
-        if(!trimmed) return line;
-        if(trimmed.startsWith('#EXT-X-KEY') && trimmed.includes('URI="')){
-          return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
-            let full = uri;
-            try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
-            return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
-          });
-        }
-        if(trimmed.startsWith('#EXT-X-MAP') && trimmed.includes('URI="')){
-          return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
-            let full = uri;
-            try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
-            return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
-          });
-        }
-        if(trimmed.startsWith('#')) return line;
-        let full = trimmed;
-        try{ full = new URL(trimmed, targetUrl).toString(); }catch(e){}
-        return `${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}`;
-      });
-      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-      return res.send(rewritten.join('\n'));
-    }
+    if(!r.body) return res.status(502).send("No body");
+    const reader = r.body.getReader();
+    const firstRead = await reader.read();
+    if(firstRead.done) return res.end();
+    const firstChunk = Buffer.from(firstRead.value);
+    const firstText = firstChunk.toString('utf8', 0, Math.min(firstChunk.length, 2000));
 
-    // اذا كان بث TS مباشر - Streaming: ندز كل قطعة اول ما توصل
-    res.setHeader('Content-Type', contentType || 'video/MP2T');
-    if(r.body){
-      const reader = r.body.getReader();
-      req.on('close', () => { try{ reader.cancel(); }catch(e){} });
+    const isM3u8 = firstText.includes('#EXTM3U') || contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.endsWith('.m3u8');
+    if(isM3u8){
+      let allChunks = [firstChunk];
       while(true){
         const { done, value } = await reader.read();
         if(done) break;
-        if(!res.writableEnded){
-          res.write(Buffer.from(value));
-        } else break;
+        allChunks.push(Buffer.from(value));
+        if(Buffer.concat(allChunks).length > 2*1024*1024) break;
       }
-      return res.end();
+      const fullText = Buffer.concat(allChunks).toString('utf8');
+      const rewritten = rewriteM3u8(fullText, targetUrl, req, userForAuth);
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+      return res.send(rewritten);
     }
-    const buf = Buffer.from(await r.arrayBuffer());
-    return res.send(buf);
+
+    res.setHeader('Content-Type', contentType || 'video/MP2T');
+    req.on('close', () => { try{ reader.cancel(); }catch(e){} });
+    if(!res.writableEnded) res.write(firstChunk);
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      if(!res.writableEnded){
+        res.write(Buffer.from(value));
+      } else break;
+    }
+    return res.end();
 
   }catch(e){
     if(!res.headersSent) return res.status(502).send("Proxy error");
@@ -394,10 +407,14 @@ app.get('/live/:user/:pass/:id', async (req, res) => {
     subCache.set(user, { time: Date.now() });
   }
 
+  // يقبل بدون امتداد و يقبل مع امتداد اذا اجا - بس الاصل بدون امتداد
   const idx = parseInt(id.replace('.m3u8','').replace('.ts','')) - 1;
   const ch = CHANNELS[idx];
   if(!ch) return res.status(404).send("Channel not found");
   res.setHeader('Cache-Control', 'no-cache');
+  if(ch.proxy === false){
+    return res.redirect(302, ch.url);
+  }
   return proxyStream(req, res, ch.url, user);
 });
 
@@ -422,8 +439,8 @@ async function stalkerHandler(req, res){
       id: String(i+1), name: c.name, number: String(i+1),
       tv_genre_id:"1", base_ch:0, service_id: String(i+1),
       enable_tv_archive:0, tv_archive_duration:0,
-      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.ts`,
-      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}.ts`,
+      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`,
+      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`,
       cmd_2: "", cmd_3: "", logo:"", use_http_tmp_link:0, wowza_dvr:0
     }));
     return res.json({ js:{ total_items: data.length, max_page_items:500, data } });
@@ -431,7 +448,7 @@ async function stalkerHandler(req, res){
   if(action === 'create_link'){
     const chId = parseInt(req.query.ch_id || req.body.ch_id || '1') - 1;
     const ch = CHANNELS[chId] || CHANNELS[0];
-    const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}.ts`;
+    const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}`;
     return res.json({ js:{ id: String(chId+1), cmd: url, type:"live", error:"" } });
   }
   if(action === 'get_genres' || action === 'get_tv_genres'){
@@ -445,17 +462,27 @@ app.get('/portal.php', stalkerHandler);
 app.post('/portal.php', stalkerHandler);
 app.get('/c/', stalkerHandler);
 
+// ===== لوحة جديدة: متصلين / غير متصلين / محظور بالالوان =====
 app.get('/admin', requireAdmin, (req, res) => {
   res.send(`
   <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
   <style>
   *{box-sizing:border-box}
   body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f1f5f9;color:#0f172a;margin:0;padding:20px}
-  .wrap{max-width:1000px;margin:auto}
+  .wrap{max-width:1050px;margin:auto}
   .header{background:#fff;padding:18px 20px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
   .header h2{margin:0;font-size:19px}
-  .header span{font-size:12px;background:#dcfce7;color:#166534;padding:5px 10px;border-radius:20px}
   .logout{background:#fee2e2;color:#991b1b;padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:13px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .stat{background:#fff;padding:14px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);text-align:center}
+  .stat b{font-size:24px;display:block}
+  .stat span{font-size:12px;color:#64748b}
+  .stat.green b{color:#16a34a}.stat.red b{color:#dc2626}.stat.orange b{color:#ea580c}.stat.blue b{color:#2563eb}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .dot-green{background:#22c55e;box-shadow:0 0 0 4px #dcfce7}
+  .dot-orange{background:#f97316;box-shadow:0 0 0 4px #ffedd5}
+  .dot-red{background:#ef4444;box-shadow:0 0 0 4px #fee2e2}
+  .dot-gray{background:#94a3b8;box-shadow:0 0 0 4px #f1f5f9}
   .card{background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
   .card h3{margin:0 0 12px;font-size:15px}
   label{font-size:12px;color:#64748b;display:block;margin-bottom:4px}
@@ -476,12 +503,19 @@ app.get('/admin', requireAdmin, (req, res) => {
   td{padding:10px;border-top:1px solid #f1f5f9;text-align:center;font-size:12px;vertical-align:middle}
   .badge{padding:4px 8px;border-radius:20px;font-size:11px;white-space:nowrap}
   .on{background:#dcfce7;color:#166534}.off{background:#fee2e2;color:#991b1b}
-  .mac-input{width:130px !important;margin:0 !important;font-size:11px !important;direction:ltr;text-align:center}
   .date-input{width:125px !important;margin:0 !important;font-size:12px !important}
-  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
   </style></head>
   <body><div class="wrap">
-  <div class="header"><h2>لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span>M3U + Xtream + Portal - حماية ماك</span><a class="logout" href="/logout">خروج</a></div></div>
+  <div class="header"><h2>لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span id="liveCount" style="font-size:12px;background:#dcfce7;color:#166534;padding:5px 10px;border-radius:20px">جاري التحميل...</span><a class="logout" href="/logout">خروج</a></div></div>
+
+  <div class="stats">
+    <div class="stat green"><b id="stOnline">0</b><span>🟢 متصل الان</span></div>
+    <div class="stat blue"><b id="stTotal">0</b><span>👥 الكل</span></div>
+    <div class="stat orange"><b id="stActive">0</b><span>✅ فعال</span></div>
+    <div class="stat red"><b id="stBlocked">0</b><span>🔴 موقوف / منتهي</span></div>
+  </div>
+
   <div class="card"><h3>اضافة مشترك جديد</h3>
   <div class="grid">
   <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
@@ -498,6 +532,16 @@ app.get('/admin', requireAdmin, (req, res) => {
   </div>
   <script>
   function showErr(t){ const d=document.getElementById('debug'); d.style.display='block'; d.textContent=t; }
+  function getStatus(s){
+    if(!s.active) return {dot:'dot-red', txt:'🔴 موقوف', cls:'off'};
+    if(s.expiry && new Date(s.expiry) < new Date()) return {dot:'dot-red', txt:'🔴 منتهي', cls:'off'};
+    if(!s.last_seen) return {dot:'dot-gray', txt:'⚪ لم يدخل بعد', cls:'off'};
+    const diffMin = Math.floor((new Date() - new Date(s.last_seen))/60000);
+    if(diffMin <= 2) return {dot:'dot-green', txt:'🟢 متصل الان', cls:'on'};
+    if(diffMin < 60) return {dot:'dot-orange', txt:'🟠 قبل '+diffMin+' دقيقة', cls:'on'};
+    if(diffMin < 1440) return {dot:'dot-orange', txt:'🟠 قبل '+Math.floor(diffMin/60)+' ساعة', cls:'on'};
+    return {dot:'dot-gray', txt:'⚪ غير متصل - '+new Date(s.last_seen).toLocaleString('ar-IQ',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}), cls:'off'};
+  }
   function formatLast(s){
     if(!s) return 'لم يدخل بعد';
     const d=new Date(s);
@@ -514,15 +558,25 @@ app.get('/admin', requireAdmin, (req, res) => {
     if(r.status===401){ location.href='/login'; return; }
     const data=await r.json();
     if(data.error){ showErr('خطأ بالقراءة: '+JSON.stringify(data)); return; }
+    // احصائيات فوق
+    const online = data.filter(s => s.active && s.last_seen && (Date.now() - new Date(s.last_seen).getTime())/60000 <= 2).length;
+    const active = data.filter(s => s.active).length;
+    const blocked = data.filter(s => !s.active || (s.expiry && new Date(s.expiry) < new Date())).length;
+    document.getElementById('stOnline').textContent = online;
+    document.getElementById('stTotal').textContent = data.length;
+    document.getElementById('stActive').textContent = active;
+    document.getElementById('stBlocked').textContent = blocked;
+    document.getElementById('liveCount').textContent = '🟢 متصل الان: ' + online + ' / ' + data.length;
     if(!data.length){document.getElementById('list').innerHTML='<div class="card" style="text-align:center;color:#64748b">لا يوجد مشتركين بعد</div>';return;}
-    let h='<table><tr><th>الاسم / الكود</th><th>بصمة الجهاز</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>حالة</th><th>اجراء</th></tr>';
+    let h='<table><tr><th>الحالة</th><th>الاسم / الكود</th><th>بصمة الجهاز</th><th>تعديل الانتهاء</th><th>اخر ظهور</th><th>اجراء</th></tr>';
     data.forEach(s=>{
+      const st = getStatus(s);
       h+=\`<tr>
+        <td><span class="dot \${st.dot}"></span><br><span style="font-size:11px">\${st.txt}</span><br><span class="badge \${s.active?'on':'off'}">\${s.active?'فعال':'موقوف'}</span></td>
         <td><b>\${s.name}</b><br><span style="direction:ltr;color:#64748b">\${s.code}</span><br><button class="btn-small btn-blue" onclick="copyLink('\${s.code}')">نسخ رابط VLC</button><br><button class="btn-small btn-green" onclick="copyExo('\${s.code}')">نسخ رابط ExoPlayer</button><br><button class="btn-small btn-orange" onclick="copyXtream('\${s.code}')">نسخ بيانات Xtream</button></td>
         <td><span style="font-size:10px;direction:ltr">\${s.device_id ? s.device_id.slice(0,8)+'...' : 'لم يرتبط بعد'}</span><br><span style="color:#64748b;font-size:10px">MAC: \${s.mac_address||'-'}</span><br><button class="btn-small btn-blue" onclick="saveMac('\${s.code}')">حفظ MAC</button></td>
         <td><input class="date-input" type="date" id="date-\${s.code}" value="\${s.expiry||''}"><br><button class="btn-small btn-green" onclick="saveDate('\${s.code}')">حفظ التاريخ</button></td>
-        <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span><br><button class="btn-small btn-gray" onclick="load()">تحديث اخر ظهور</button></td>
-        <td><span class="badge \${s.active?'on':'off'}">\${s.active?'فعال':'موقوف'}</span></td>
+        <td>\${formatLast(s.last_seen)}<br><span style="color:#64748b;font-size:10px">IP: \${s.device_ip||'-'}</span></td>
         <td><button class="btn-small btn-orange" onclick="resetDevice('\${s.code}')">فك ربط الجهاز</button><br><button class="btn-small btn-gray" onclick="toggle('\${s.code}',\${!s.active})">ايقاف/تشغيل</button><button class="btn-small btn-red" onclick="delSub('\${s.code}')">حذف</button></td>
       </tr>\`;
     });
@@ -579,6 +633,7 @@ app.get('/admin', requireAdmin, (req, res) => {
   }
   function exportCSV(){ window.open('/api/export'); }
   load();
+  setInterval(load, 15000);
   </script></body></html>`);
 });
 
