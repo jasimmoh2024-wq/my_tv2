@@ -17,7 +17,7 @@ const headers = {
 };
 
 const CHANNELS = [
-  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4011.m3u8"},
+  {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/4011"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/16"},
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953587"},
   {"name":"4 - bein sport 4","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953586"},
