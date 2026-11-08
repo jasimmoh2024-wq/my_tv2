@@ -225,15 +225,20 @@ async function checkDevice(req, code, macParam, skipLock){
   return { ok:true, sub };
 }
 
+// ===== تم تعديل الـ Playlist هنا: يوزع رابط دومينك مو الرابط الاصلي =====
 async function sendPlaylist(req, res){
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
   const check = await checkDevice(req, code, req.query.mac || req.query.device || '', true);
   if(!check.ok) return res.status(403).send(check.msg);
 
+  const host = req.get('host');
+  const proto = req.protocol;
+
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach((c,i) => {
-    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${c.url}\n`;
+    const proxiedUrl = `${proto}://${host}/live/${code}/${code}/${i+1}.ts`;
+    m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${proxiedUrl}\n`;
   });
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/x-mpegURL; charset=utf-8');
@@ -288,8 +293,7 @@ app.get('/player_api.php', async (req, res) => {
   });
 });
 
-// ===== التعديل الجديد: Render هو الموزع الرئيسي - Proxy حقيقي =====
-// هاي الدالة تجيب البث من سيرفر القناة وتدزه للمشاهد من خلال Render
+// ===== Render هو الموزع الرئيسي - Proxy حقيقي =====
 async function proxyStream(req, res, targetUrl, userForAuth){
   try{
     const fetchHeaders = {
@@ -310,18 +314,15 @@ async function proxyStream(req, res, targetUrl, userForAuth){
     if(r.headers.get('content-range')) res.setHeader('Content-Range', r.headers.get('content-range'));
     if(r.headers.get('accept-ranges')) res.setHeader('Accept-Ranges', r.headers.get('accept-ranges'));
 
-    // اذا كان ملف m3u8 لازم نعيد كتابة روابط المقاطع حتى تمر من Render ايضا
     const isM3u8 = contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.includes('.m3u8') || targetUrl.includes('/6250');
     if(isM3u8){
       let text = await r.text();
       const host = req.get('host');
       const proto = req.protocol;
-      // اعادة كتابة كل سطر رابط
       const lines = text.split('\n');
       const rewritten = lines.map(line => {
         line = line.trim();
         if(!line) return line;
-        // روابط داخل تاغات مثل EXT-X-KEY
         if(line.startsWith('#EXT-X-KEY') && line.includes('URI="')){
           return line.replace(/URI="([^"]+)"/g, (m, uri) => {
             let full = uri;
@@ -337,7 +338,6 @@ async function proxyStream(req, res, targetUrl, userForAuth){
           });
         }
         if(line.startsWith('#')) return line;
-        // هذا سطر مقطع .ts او .m3u8
         let full = line;
         try{ full = new URL(line, targetUrl).toString(); }catch(e){}
         return `${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}`;
@@ -346,7 +346,6 @@ async function proxyStream(req, res, targetUrl, userForAuth){
       return res.send(rewritten.join('\n'));
     }
 
-    // اذا فيديو او مقطع ts - ندزه مباشرة من Render
     res.setHeader('Content-Type', contentType || 'video/MP2T');
     const buf = Buffer.from(await r.arrayBuffer());
     return res.send(buf);
@@ -357,11 +356,9 @@ async function proxyStream(req, res, targetUrl, userForAuth){
   }
 }
 
-// رابط عام للبروكسي للمقاطع الداخلية
 app.get('/proxy', async (req, res) => {
   const targetUrl = req.query.url;
   if(!targetUrl) return res.status(400).send("No url");
-  // فحص خفيف للمشترك اذا موجود يوزر - حتى ما يبقى الرابط مفتوح للكل
   const u = req.query.u;
   if(u){
     const cached = subCache.get(u);
@@ -374,13 +371,11 @@ app.get('/proxy', async (req, res) => {
   return proxyStream(req, res, decodeURIComponent(targetUrl), u);
 });
 
-// ===== التصليح الرئيسي هنا: التشغيل ما يفحص Supabase كل مرة =====
+// ===== التشغيل من خلال Render =====
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
 
-  // اذا المشترك انفحص قبل اقل من 15 دقيقة، مرره مباشرة بدون اي فحص
-  // هذا يمنع انقطاع القناة بعد فترة
   const cached = subCache.get(user);
   if(!cached || Date.now() - cached.time > 15*60*1000){
     const check = await checkDevice(req, user, req.query.mac || '', true);
@@ -392,8 +387,6 @@ app.get('/live/:user/:pass/:id', async (req, res) => {
   const ch = CHANNELS[idx];
   if(!ch) return res.status(404).send("Channel not found");
   res.setHeader('Cache-Control', 'no-cache');
-  // قبل: res.redirect(302, ch.url) - كان يودي المشاهد مباشرة لسيرفر القناة
-  // هسه: Render هو اللي يجيب البث ويوزعه - Proxy حقيقي
   return proxyStream(req, res, ch.url, user);
 });
 
