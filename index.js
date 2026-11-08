@@ -117,7 +117,6 @@ const CHANNELS = [
   {"name":"98 - test","url":"http://tyqw.site:2052/10675785266958/99039021857485/677084"}
 ];
 
-// كاش 15 دقيقة - هذا هو التصليح مال الانقطاع
 const subCache = new Map();
 
 function parseCookies(req){
@@ -225,7 +224,6 @@ async function checkDevice(req, code, macParam, skipLock){
   return { ok:true, sub };
 }
 
-// ===== تم تعديل الـ Playlist هنا: يوزع رابط دومينك مو الرابط الاصلي =====
 async function sendPlaylist(req, res){
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
@@ -293,11 +291,11 @@ app.get('/player_api.php', async (req, res) => {
   });
 });
 
-// ===== Render هو الموزع الرئيسي - Proxy حقيقي =====
+// ===== التصليح الجديد: Streaming حقيقي - ما ينتظر البث يخلص =====
 async function proxyStream(req, res, targetUrl, userForAuth){
   try{
     const fetchHeaders = {
-      'User-Agent': 'Mozilla/5.0 (compatible; OpenTV-Proxy/1.0)',
+      'User-Agent': 'Mozilla/5.0 (VLC/3.0.20 LibVLC/3.0.20)',
       'Accept': '*/*',
       'Accept-Encoding': 'identity',
       'Connection': 'keep-alive'
@@ -309,50 +307,64 @@ async function proxyStream(req, res, targetUrl, userForAuth){
 
     const contentType = r.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'no-cache');
-    if(r.headers.get('content-length')) res.setHeader('Content-Length', r.headers.get('content-length'));
-    if(r.headers.get('content-range')) res.setHeader('Content-Range', r.headers.get('content-range'));
+    res.setHeader('Cache-Control', 'no-cache, no-store');
+    res.setHeader('X-Accel-Buffering', 'no');
     if(r.headers.get('accept-ranges')) res.setHeader('Accept-Ranges', r.headers.get('accept-ranges'));
 
-    const isM3u8 = contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.includes('.m3u8') || targetUrl.includes('/6250');
-    if(isM3u8){
+    // اذا كان m3u8 حقيقي فقط - نجيب النص ونعيد كتابة الروابط
+    // انتبه: القنوات 80 و 81 مو m3u8، هي بث TS مباشر، فلازم ما نعتبرها m3u8
+    const isReallyM3u8 = contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.endsWith('.m3u8');
+    if(isReallyM3u8){
       let text = await r.text();
       const host = req.get('host');
       const proto = req.protocol;
       const lines = text.split('\n');
       const rewritten = lines.map(line => {
-        line = line.trim();
-        if(!line) return line;
-        if(line.startsWith('#EXT-X-KEY') && line.includes('URI="')){
-          return line.replace(/URI="([^"]+)"/g, (m, uri) => {
+        const trimmed = line.trim();
+        if(!trimmed) return line;
+        if(trimmed.startsWith('#EXT-X-KEY') && trimmed.includes('URI="')){
+          return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
             let full = uri;
             try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
             return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
           });
         }
-        if(line.startsWith('#EXT-X-MAP') && line.includes('URI="')){
-          return line.replace(/URI="([^"]+)"/g, (m, uri) => {
+        if(trimmed.startsWith('#EXT-X-MAP') && trimmed.includes('URI="')){
+          return trimmed.replace(/URI="([^"]+)"/g, (m, uri) => {
             let full = uri;
             try{ full = new URL(uri, targetUrl).toString(); }catch(e){}
             return `URI="${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}"`;
           });
         }
-        if(line.startsWith('#')) return line;
-        let full = line;
-        try{ full = new URL(line, targetUrl).toString(); }catch(e){}
+        if(trimmed.startsWith('#')) return line;
+        let full = trimmed;
+        try{ full = new URL(trimmed, targetUrl).toString(); }catch(e){}
         return `${proto}://${host}/proxy?url=${encodeURIComponent(full)}&u=${userForAuth||''}`;
       });
       res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
       return res.send(rewritten.join('\n'));
     }
 
+    // اذا كان بث TS مباشر - Streaming: ندز كل قطعة اول ما توصل
     res.setHeader('Content-Type', contentType || 'video/MP2T');
+    if(r.body){
+      const reader = r.body.getReader();
+      req.on('close', () => { try{ reader.cancel(); }catch(e){} });
+      while(true){
+        const { done, value } = await reader.read();
+        if(done) break;
+        if(!res.writableEnded){
+          res.write(Buffer.from(value));
+        } else break;
+      }
+      return res.end();
+    }
     const buf = Buffer.from(await r.arrayBuffer());
     return res.send(buf);
 
   }catch(e){
-    console.error("Proxy error:", e.message, targetUrl);
-    return res.status(502).send("Proxy error");
+    if(!res.headersSent) return res.status(502).send("Proxy error");
+    try{ res.end(); }catch(_){}
   }
 }
 
@@ -371,7 +383,6 @@ app.get('/proxy', async (req, res) => {
   return proxyStream(req, res, decodeURIComponent(targetUrl), u);
 });
 
-// ===== التشغيل من خلال Render =====
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
