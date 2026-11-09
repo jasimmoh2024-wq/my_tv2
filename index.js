@@ -16,8 +16,33 @@ const headers = {
   "Prefer": "return=representation"
 };
 
-// ===== كل القنوات بدون امتداد - مثل ما هي بالاصل =====
-const CHANNELS = [
+// ===== اصلاح الروابط: نوحد كل الروابط على نفس الصيغة =====
+// القناة 1 كانت /live/.../4011.m3u8 والباقي /.../16 بدون شي
+// هاي الدالة تخلي الكل نفس الشي: /live/user/pass/id.m3u8
+function normalizeUpstream(url){
+  try{
+    // اذا الرابط مو من سيرفرات Xtream (مثل shahid او edgenext) رجعه مثل ما هو
+    if(!url.includes('jbfgrjbn') && !url.includes('tyqw.site')) return url;
+    let u = url.trim();
+    // شيل .m3u8 و .ts من الاخير حتى نعيد بناءه نظيف
+    u = u.replace(/\.m3u8$/, '').replace(/\.ts$/, '');
+    // شيل /live/ اذا موجود حتى ما يتكرر
+    u = u.replace('/live/', '/');
+    // هسه u شكله: http://host:port/user/pass/id
+    // نحوله الى: http://host:port/live/user/pass/id.m3u8
+    const parts = u.split('/');
+    // parts = [http:, , host:port, user, pass, id]
+    if(parts.length >= 6){
+      const base = parts[0] + '//' + parts[2];
+      const user = parts[3], pass = parts[4], id = parts[5];
+      return `${base}/live/${user}/${pass}/${id}.m3u8`;
+    }
+    return url;
+  }catch(e){ return url; }
+}
+
+// ===== القنوات - خليها مثل ما هي، الدالة فوق تصلحها اوتوماتيك =====
+const CHANNELS_RAW = [
   {"name":"1 - bein sport 1","url":"http://jbfgrjbn.fhkadvnp.com:80/live/7901885855/7610043061/4011.m3u8"},
   {"name":"2 - bein sport 2","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/16"},
   {"name":"3 - bein sport 3","url":"http://jbfgrjbn.fhkadvnp.com:80/7901885855/7610043061/953587"},
@@ -117,9 +142,10 @@ const CHANNELS = [
   {"name":"97 - pink panther 2","url":"http://tyqw.site:2052/10675785266958/99039021857485/193317"},
   {"name":"98 - test","url":"http://tyqw.site:2052/10675785266958/99039021857485/677084"}
 ];
+// هنا نطبق التصليح على كل القنوات
+const CHANNELS = CHANNELS_RAW.map(c => ({ name: c.name, url: normalizeUpstream(c.url) }));
 
 const subCache = new Map();
-
 function parseCookies(req){
   const c = {};
   (req.headers.cookie || '').split(';').forEach(p=>{
@@ -136,7 +162,6 @@ function requireAdmin(req,res,next){
   if(isAdmin(req)) return next();
   return res.redirect('/login');
 }
-
 app.get('/login', (req, res) => {
   if(isAdmin(req)) return res.redirect('/admin');
   res.send(`
@@ -161,7 +186,6 @@ app.get('/login', (req, res) => {
   <p style="margin-top:14px;font-size:11px">اذا ما اخترت حفظ، من تسد المتصفح راح يقفل</p>
   </div></body></html>`);
 });
-
 app.post('/login', (req, res) => {
   if(req.body.pass === ADMIN_PASS){
     const token = Buffer.from(ADMIN_PASS).toString('base64');
@@ -174,42 +198,34 @@ app.post('/login', (req, res) => {
   }
   res.redirect('/login?err=1');
 });
-
 app.get('/logout', (req, res) => {
   res.setHeader('Set-Cookie', 'admin_auth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
   res.redirect('/login');
 });
-
 async function getSubscriber(code) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}&select=*`, { headers });
   const data = await r.json();
   return data[0];
 }
-
 async function checkDevice(req, code, macParam, skipLock){
   const sub = await getSubscriber(code);
   if(!sub) return { ok:false, msg:"Code not found" };
   if(!sub.active) return { ok:false, msg:"Account disabled - الاشتراك موقوف" };
   if(sub.expiry && new Date(sub.expiry) < new Date()) return { ok:false, msg:"Expired - انتهى اشتراكك" };
-
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').toString().split(',')[0].trim();
   const mac = (macParam || '').toString().trim().toUpperCase();
   const now = new Date().toISOString();
   const lastSeen = sub.last_seen ? new Date(sub.last_seen).getTime() : 0;
   const diffMin = (Date.now() - lastSeen) / 60000;
-
   if(skipLock){
     await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     return { ok:true, sub };
   }
-
   if(!mac){
     await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'PATCH', headers, body: JSON.stringify({ last_seen: now, device_ip: ip }) });
     return { ok:true, sub };
   }
-
   const fingerprint = crypto.createHash('md5').update(mac).digest('hex');
-
   if(sub.device_id){
     if(sub.device_id !== fingerprint && diffMin < 2){
       return { ok:false, msg:"هذا الاشتراك يعمل على جهاز اخر - اطفئ الجهاز الاول او انتظر دقيقتين", sub };
@@ -224,19 +240,16 @@ async function checkDevice(req, code, macParam, skipLock){
   }
   return { ok:true, sub };
 }
-
-// ===== Playlist بدون امتداد - مثل الاصل =====
 async function sendPlaylist(req, res){
   const code = req.query.code;
   if (!code) return res.status(403).send("No code");
   const check = await checkDevice(req, code, req.query.mac || req.query.device || '', true);
   if(!check.ok) return res.status(403).send(check.msg);
-
   const host = req.get('host');
   const proto = req.protocol;
-
   let m3u = "#EXTM3U\n";
   CHANNELS.forEach((c,i) => {
+    // نعطي المشغل رابط بدون امتداد مثل قبل، بس السيرفر الداخلي راح يحوله لـ .m3u8
     const proxiedUrl = `${proto}://${host}/live/${code}/${code}/${i+1}`;
     m3u += `#EXTINF:-1 tvg-id="${c.name}" tvg-name="${c.name}" group-title="Live",${c.name}\n${proxiedUrl}\n`;
   });
@@ -245,11 +258,9 @@ async function sendPlaylist(req, res){
   res.setHeader('Content-Disposition', 'inline; filename="playlist.m3u8"');
   res.send(m3u);
 }
-
 app.get('/playlist', sendPlaylist);
 app.get('/playlist.m3u8', sendPlaylist);
 app.get('/playlist.m3u', sendPlaylist);
-
 app.get('/player_api.php', async (req, res) => {
   const username = req.query.username || '';
   const password = req.query.password || '';
@@ -259,40 +270,19 @@ app.get('/player_api.php', async (req, res) => {
   const check = await checkDevice(req, username, req.query.mac || '', isListRequest);
   if(!check.ok) return res.json({ user_info:{ auth:0, status:"Banned", message: check.msg }, server_info:{} });
   const sub = check.sub;
-
   const host = req.get('host');
   const proto = req.protocol;
-  const serverInfo = {
-    url: host,
-    port: "443",
-    https_port: "443",
-    server_protocol: "https",
-    rtmp_port: "1935",
-    timezone: "Asia/Baghdad",
-    timestamp_now: Math.floor(Date.now()/1000),
-    time_now: new Date().toISOString()
-  };
-
+  const serverInfo = { url: host, port: "443", https_port: "443", server_protocol: "https", rtmp_port: "1935", timezone: "Asia/Baghdad", timestamp_now: Math.floor(Date.now()/1000), time_now: new Date().toISOString() };
   if(action === 'get_live_categories' || action === 'get_live_streams' || action === 'get_vod_categories' || action === 'get_vod_streams' || action === 'get_series_categories' || action === 'get_series'){
     if(action.includes('categories')) return res.json([{ category_id:"1", category_name:"Live", parent_id:0 }]);
     if(action === 'get_live_streams'){
-      return res.json(CHANNELS.map((c,i)=>({
-        num: i+1, name: c.name, stream_type:"live", stream_id: i+1,
-        stream_icon:"", epg_channel_id:"", added:"", category_id:"1",
-        custom_sid:"", tv_archive:0,
-        direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}`,
-        tv_archive_duration:0
-      })));
+      return res.json(CHANNELS.map((c,i)=>({ num: i+1, name: c.name, stream_type:"live", stream_id: i+1, stream_icon:"", epg_channel_id:"", added:"", category_id:"1", custom_sid:"", tv_archive:0, direct_source: `${proto}://${host}/live/${username}/${password}/${i+1}`, tv_archive_duration:0 })));
     }
     return res.json([]);
   }
   const exp = sub.expiry ? Math.floor(new Date(sub.expiry).getTime()/1000) : Math.floor(Date.now()/1000)+365*24*3600;
-  return res.json({
-    user_info:{ username, password, message:"", auth:1, status:"Active", exp_date:String(exp), is_trial:"0", active_cons:"1", created_at:String(Math.floor(Date.now()/1000)), max_connections:"1", allowed_output_formats:["m3u8","ts"] },
-    server_info: serverInfo
-  });
+  return res.json({ user_info:{ username, password, message:"", auth:1, status:"Active", exp_date:String(exp), is_trial:"0", active_cons:"1", created_at:String(Math.floor(Date.now()/1000)), max_connections:"1", allowed_output_formats:["m3u8","ts"] }, server_info: serverInfo });
 });
-
 function rewriteM3u8(text, targetUrl, req, userForAuth){
   const host = req.get('host');
   const proto = req.protocol;
@@ -321,33 +311,24 @@ function rewriteM3u8(text, targetUrl, req, userForAuth){
   });
   return rewritten.join('\n');
 }
-
 async function proxyStream(req, res, targetUrl, userForAuth){
   try{
-    const fetchHeaders = {
-      'User-Agent': 'Mozilla/5.0 (VLC/3.0.20 LibVLC/3.0.20)',
-      'Accept': '*/*',
-      'Accept-Encoding': 'identity',
-      'Connection': 'keep-alive'
-    };
+    const fetchHeaders = { 'User-Agent': 'Mozilla/5.0 (VLC/3.0.20 LibVLC/3.0.20)', 'Accept': '*/*', 'Accept-Encoding': 'identity', 'Connection': 'keep-alive' };
     if(req.headers.range) fetchHeaders['Range'] = req.headers.range;
-
     const r = await fetch(targetUrl, { headers: fetchHeaders, redirect: 'follow' });
     if(!r.ok) return res.status(r.status).send("Upstream error: " + r.status);
-
     const contentType = r.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'no-cache, no-store');
     res.setHeader('X-Accel-Buffering', 'no');
     if(r.headers.get('accept-ranges')) res.setHeader('Accept-Ranges', r.headers.get('accept-ranges'));
-
     if(!r.body) return res.status(502).send("No body");
     const reader = r.body.getReader();
     const firstRead = await reader.read();
     if(firstRead.done) return res.end();
     const firstChunk = Buffer.from(firstRead.value);
     const firstText = firstChunk.toString('utf8', 0, Math.min(firstChunk.length, 2000));
-
+    // اصلاح: حتى لو الرابط الاصلي بدون امتداد، اذا رجع m3u8 نعامله كـ m3u8
     const isM3u8 = firstText.includes('#EXTM3U') || contentType.includes('mpegurl') || contentType.includes('x-mpegURL') || targetUrl.endsWith('.m3u8');
     if(isM3u8){
       let allChunks = [firstChunk];
@@ -362,25 +343,20 @@ async function proxyStream(req, res, targetUrl, userForAuth){
       res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
       return res.send(rewritten);
     }
-
     res.setHeader('Content-Type', contentType || 'video/MP2T');
     req.on('close', () => { try{ reader.cancel(); }catch(e){} });
     if(!res.writableEnded) res.write(firstChunk);
     while(true){
       const { done, value } = await reader.read();
       if(done) break;
-      if(!res.writableEnded){
-        res.write(Buffer.from(value));
-      } else break;
+      if(!res.writableEnded){ res.write(Buffer.from(value)); } else break;
     }
     return res.end();
-
   }catch(e){
     if(!res.headersSent) return res.status(502).send("Proxy error");
     try{ res.end(); }catch(_){}
   }
 }
-
 app.get('/proxy', async (req, res) => {
   const targetUrl = req.query.url;
   if(!targetUrl) return res.status(400).send("No url");
@@ -395,54 +371,34 @@ app.get('/proxy', async (req, res) => {
   }
   return proxyStream(req, res, decodeURIComponent(targetUrl), u);
 });
-
 app.get('/live/:user/:pass/:id', async (req, res) => {
   const { user, pass, id } = req.params;
   if(pass !== user) return res.status(403).send("Auth failed");
-
   const cached = subCache.get(user);
   if(!cached || Date.now() - cached.time > 15*60*1000){
     const check = await checkDevice(req, user, req.query.mac || '', true);
     if(!check.ok) return res.status(403).send(check.msg);
     subCache.set(user, { time: Date.now() });
   }
-
-  // يقبل بدون امتداد و يقبل مع امتداد اذا اجا - بس الاصل بدون امتداد
   const idx = parseInt(id.replace('.m3u8','').replace('.ts','')) - 1;
   const ch = CHANNELS[idx];
   if(!ch) return res.status(404).send("Channel not found");
   res.setHeader('Cache-Control', 'no-cache');
-  if(ch.proxy === false){
-    return res.redirect(302, ch.url);
-  }
+  // القناة راح تطلع من هنا بنفس الصيغة المصححة: /live/user/pass/id.m3u8
   return proxyStream(req, res, ch.url, user);
 });
-
 async function stalkerHandler(req, res){
   const action = req.query.action || req.body.action || '';
   const mac = (req.query.mac || req.body.mac || req.headers['x-mac'] || '').toString().toUpperCase();
   const token = req.query.token || req.body.token || '';
-
-  if(action === 'handshake'){
-    return res.json({ js:{ token:"123456", random:"abcdef", not_valid_token:0 } });
-  }
+  if(action === 'handshake'){ return res.json({ js:{ token:"123456", random:"abcdef", not_valid_token:0 } }); }
   const login = (req.query.login || req.body.login || token || '').toString();
-  if(action === 'get_profile'){
-    return res.json({ js:{ id:1, name: login || "User", login: login, mac: mac, status:2, tariff_plan:"Premium" } });
-  }
+  if(action === 'get_profile'){ return res.json({ js:{ id:1, name: login || "User", login: login, mac: mac, status:2, tariff_plan:"Premium" } }); }
   if(!login) return res.json({ js:{ data:[] } });
   const check = await checkDevice(req, login, mac, true);
   if(!check.ok) return res.json({ js:{ error: check.msg } });
-
   if(action === 'get_all_channels' || action === 'get_ordered_list'){
-    const data = CHANNELS.map((c,i)=>({
-      id: String(i+1), name: c.name, number: String(i+1),
-      tv_genre_id:"1", base_ch:0, service_id: String(i+1),
-      enable_tv_archive:0, tv_archive_duration:0,
-      cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`,
-      cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`,
-      cmd_2: "", cmd_3: "", logo:"", use_http_tmp_link:0, wowza_dvr:0
-    }));
+    const data = CHANNELS.map((c,i)=>({ id: String(i+1), name: c.name, number: String(i+1), tv_genre_id:"1", base_ch:0, service_id: String(i+1), enable_tv_archive:0, tv_archive_duration:0, cmd: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`, cmd_1: `${req.protocol}://${req.get('host')}/live/${login}/${login}/${i+1}`, cmd_2: "", cmd_3: "", logo:"", use_http_tmp_link:0, wowza_dvr:0 }));
     return res.json({ js:{ total_items: data.length, max_page_items:500, data } });
   }
   if(action === 'create_link'){
@@ -451,9 +407,7 @@ async function stalkerHandler(req, res){
     const url = `${req.protocol}://${req.get('host')}/live/${login}/${login}/${chId+1}`;
     return res.json({ js:{ id: String(chId+1), cmd: url, type:"live", error:"" } });
   }
-  if(action === 'get_genres' || action === 'get_tv_genres'){
-    return res.json({ js:[{ id:"1", title:"Live", alias:"live" }] });
-  }
+  if(action === 'get_genres' || action === 'get_tv_genres'){ return res.json({ js:[{ id:"1", title:"Live", alias:"live" }] }); }
   return res.json({ js:{} });
 }
 app.get('/stalker_portal/server/load.php', stalkerHandler);
@@ -462,7 +416,7 @@ app.get('/portal.php', stalkerHandler);
 app.post('/portal.php', stalkerHandler);
 app.get('/c/', stalkerHandler);
 
-// ===== لوحة جديدة: متصلين / غير متصلين / محظور بالالوان =====
+// ===== لوحة المشتركين - موجودة، بس صلحت زر الحذف =====
 app.get('/admin', requireAdmin, (req, res) => {
   res.send(`
   <!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم</title>
@@ -508,18 +462,16 @@ app.get('/admin', requireAdmin, (req, res) => {
   </style></head>
   <body><div class="wrap">
   <div class="header"><h2>لوحة تحكم المشتركين</h2><div style="display:flex;gap:8px;align-items:center"><span id="liveCount" style="font-size:12px;background:#dcfce7;color:#166534;padding:5px 10px;border-radius:20px">جاري التحميل...</span><a class="logout" href="/logout">خروج</a></div></div>
-
   <div class="stats">
     <div class="stat green"><b id="stOnline">0</b><span>🟢 متصل الان</span></div>
     <div class="stat blue"><b id="stTotal">0</b><span>👥 الكل</span></div>
     <div class="stat orange"><b id="stActive">0</b><span>✅ فعال</span></div>
     <div class="stat red"><b id="stBlocked">0</b><span>🔴 موقوف / منتهي</span></div>
   </div>
-
-  <div class="card"><h3>اضافة مشترك جديد</h3>
+  <div class="card"><h3>➕ اضافة مشترك جديد</h3>
   <div class="grid">
-  <div><label>اسم المشترك</label><input id="name" placeholder=" " autocomplete="off"></div>
-  <div><label>كود المشترك</label><input id="code" placeholder=" " autocomplete="off"></div>
+  <div><label>اسم المشترك</label><input id="name" placeholder="مثلا: علي" autocomplete="off"></div>
+  <div><label>كود المشترك</label><input id="code" placeholder="مثلا: ali123" autocomplete="off"></div>
   <div><label>MAC الرسيفر (اختياري - اتركه فارغ)</label><input id="mac" placeholder="اتركه فارغ، السيرفر راح يبصم الجهاز اوتوماتيك" style="direction:ltr" autocomplete="off"></div>
   <div><label>تاريخ الانتهاء</label><input id="expiry" type="date"></div>
   </div>
@@ -558,7 +510,6 @@ app.get('/admin', requireAdmin, (req, res) => {
     if(r.status===401){ location.href='/login'; return; }
     const data=await r.json();
     if(data.error){ showErr('خطأ بالقراءة: '+JSON.stringify(data)); return; }
-    // احصائيات فوق
     const online = data.filter(s => s.active && s.last_seen && (Date.now() - new Date(s.last_seen).getTime())/60000 <= 2).length;
     const active = data.filter(s => s.active).length;
     const blocked = data.filter(s => !s.active || (s.expiry && new Date(s.expiry) < new Date())).length;
@@ -636,7 +587,6 @@ app.get('/admin', requireAdmin, (req, res) => {
   setInterval(load, 15000);
   </script></body></html>`);
 });
-
 app.get('/api/subs', requireAdmin, async (req, res) => {
   let url = `${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc&limit=1000`;
   if (req.query.q) url += `&or=(name.ilike.*${encodeURIComponent(req.query.q)}*,code.ilike.*${encodeURIComponent(req.query.q)}*,mac_address.ilike.*${encodeURIComponent(req.query.q)}*)`;
@@ -645,39 +595,35 @@ app.get('/api/subs', requireAdmin, async (req, res) => {
   if(!r.ok) return res.status(r.status).json(j);
   res.json(j);
 });
-
 app.post('/api/subs', requireAdmin, async (req, res) => {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers`, { method: 'POST', headers, body: JSON.stringify({ name: req.body.name, code: req.body.code, mac_address: req.body.mac_address || null, expiry: req.body.expiry || null, active: true }) });
   const j = await r.json();
   if(!r.ok) return res.status(r.status).json(j);
   res.json(j);
 });
-
 app.post('/api/update-date', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ expiry: req.body.expiry }) });
   res.json({ ok: true });
 });
-
 app.post('/api/update-mac', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: req.body.mac_address || null }) });
   res.json({ ok: true });
 });
-
 app.post('/api/toggle', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ active: req.body.active }) });
   res.json({ ok: true });
 });
-
 app.post('/api/reset-device', requireAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'PATCH', headers, body: JSON.stringify({ mac_address: null, device_id: null, device_ip: null, last_seen: null }) });
   res.json({ ok: true });
 });
-
+// اصلاح الحذف: كان يقرأ الكود من body وهو يجي من query
 app.delete('/api/subs', requireAdmin, async (req, res) => {
-  await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${req.body.code}`, { method: 'DELETE', headers });
+  const code = req.query.code || req.body.code;
+  if(!code) return res.status(400).json({ error: "no code" });
+  await fetch(`${SUPABASE_URL}/rest/v1/subscribers?code=eq.${code}`, { method: 'DELETE', headers });
   res.json({ ok: true });
 });
-
 app.get('/api/export', requireAdmin, async (req, res) => {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/subscribers?select=*&order=created_at.desc`, { headers });
   const data = await r.json();
@@ -687,10 +633,6 @@ app.get('/api/export', requireAdmin, async (req, res) => {
   res.setHeader('Content-Disposition', 'attachment; filename=subscribers.csv');
   res.send(csv);
 });
-
-app.get('/', (req, res) => {
-  res.send("TV Server - Online");
-});
-
+app.get('/', (req, res) => { res.send("TV Server - Online"); });
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("Running " + PORT));
