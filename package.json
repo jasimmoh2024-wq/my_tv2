@@ -1,7 +1,9 @@
 {
-  "name": "open-tv-proxy",
+  "name": "my-tv2",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": { "start": "node index.js" },
-  "dependencies": { "express": "^4.18.2" }
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  }
 }
