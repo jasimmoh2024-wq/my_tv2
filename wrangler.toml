@@ -5,4 +5,4 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "my-tv-db"
-database_id = "PLACEHOLDER"
+database_id = "8bd1b9b5-c5fd-4cd9-b145-caa7d8eb4a91"
